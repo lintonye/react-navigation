@@ -220,7 +220,7 @@ class CardStack extends React.Component<DefaultProps, Props, void> {
     );
   }
 
-  _render(props: NavigationTransitionProps): React.Element<*> {
+  _render(props: NavigationTransitionProps, prevTransitionProps:?NavigationTransitionProps): React.Element<*> {
     let floatingHeader = null;
     const headerMode = this._getHeaderMode();
     if (headerMode === 'float') {
@@ -235,7 +235,7 @@ class CardStack extends React.Component<DefaultProps, Props, void> {
             scene => this._renderScene({
               ...props,
               scene,
-            })
+            }, prevTransitionProps)
           )}
         </View>
         {floatingHeader}
@@ -267,7 +267,7 @@ class CardStack extends React.Component<DefaultProps, Props, void> {
     if (this.props.transitionConfig) {
       return {
         ...defaultConfig,
-        ...this.props.transitionConfig(),
+        ...this.props.transitionConfig(transitionProps, prevTransitionProps),
       };
     } else {
       return defaultConfig;
@@ -316,10 +316,10 @@ class CardStack extends React.Component<DefaultProps, Props, void> {
     return navigation;
   }
 
-  _renderScene(props: NavigationSceneRendererProps): React.Element<*> {
+  _renderScene(props: NavigationSceneRendererProps, prevTransitionProps:NavigationTransitionProps): React.Element<*> {
     const isModal = this.props.mode === 'modal';
 
-    const { screenInterpolator } = this._getTransitionConfig();
+    const { screenInterpolator } = this._getTransitionConfig(props, prevTransitionProps);
     const style = screenInterpolator && screenInterpolator(props);
 
     let panHandlers = null;
