@@ -7,7 +7,6 @@ module.exports = {
   // Core
   get createNavigationContainer() { return require('./createNavigationContainer').default; },
   get StateUtils() { return require('./StateUtils').default; },
-  get PropTypes() { return require('./PropTypes').default; },
   get addNavigationHelpers() { return require('./addNavigationHelpers').default; },
   get NavigationActions() { return require('./NavigationActions').default; },
 
@@ -18,4 +17,6 @@ module.exports = {
   get StackRouter() { return require('./routers/StackRouter').default; },
   get TabRouter() { return require('./routers/TabRouter').default; },
 
+  // HOCs
+  get withNavigation() { return require('./views/withNavigation').default; },
 };
