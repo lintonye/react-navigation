@@ -4,10 +4,12 @@ import React, { PureComponent } from 'react';
 
 import type {
   NavigationScreenProp,
-  NavigationState,
-  NavigationRoute,
-  NavigationAction,
+    NavigationState,
+    NavigationRoute,
+    NavigationAction,
 } from '../TypeDefinition';
+
+import Transition from './Transition';
 
 type Props = {
   screenProps?: {};
@@ -48,11 +50,14 @@ export default class SceneView extends PureComponent<void, Props, void> {
       component: Component,
     } = this.props;
 
+    const routeName = navigation.state.routeName;
     return (
-      <Component
-        screenProps={screenProps}
-        navigation={navigation}
-      />
+      <Transition.View id={`$scene-${routeName}`} containerRouteName={routeName} >
+        <Component
+          screenProps={screenProps}
+          navigation={navigation}
+        />
+      </Transition.View>
     );
   }
 }
