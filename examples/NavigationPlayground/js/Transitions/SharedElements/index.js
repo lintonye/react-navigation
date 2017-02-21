@@ -42,10 +42,10 @@ const SharedImage = createTransition(SharedElements, /image-.+/);
 const CrossFadeScene = createTransition(CrossFade, /\$scene.+/);
 
 const transitions = [
-  { from: 'PhotoGrid', to: 'PhotoDetail', transition: CrossFadeScene },
-  { from: 'PhotoDetail', to: 'PhotoGrid', transition: CrossFadeScene },
-  // { from: 'PhotoGrid', to: 'PhotoDetail', transition: SharedImage },
-  // { from: 'PhotoDetail', to: 'PhotoGrid', transition: SharedImage },
+  // { from: 'PhotoGrid', to: 'PhotoDetail', transition: CrossFadeScene },
+  // { from: 'PhotoDetail', to: 'PhotoGrid', transition: CrossFadeScene },
+  { from: 'PhotoGrid', to: 'PhotoDetail', transition: SharedImage },
+  { from: 'PhotoDetail', to: 'PhotoGrid', transition: SharedImage },
 ];
 
 const App = StackNavigator({
