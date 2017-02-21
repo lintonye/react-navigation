@@ -47,7 +47,6 @@ const margin = 2;
 const photoWidth = (windowWidth - margin * colCount * 2) / colCount;
 
 const photoRows = _.chunk(photos, colCount);
-console.log('=========> Transition', Transition);
 
 class PhotoGrid extends Component {
   static navigationOptions = {
