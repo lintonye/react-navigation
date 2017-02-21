@@ -31,12 +31,6 @@ function findTransitionConfig(transitionConfigs: Array<*>, routeName: string, pr
   return transitionConfigs.find(c => c.from === prevRouteName && c.to === routeName);
 }
 
-function createAnimatedStyle(transitionProps, transitionConfig) {
-  return (transitionConfig
-    ? transitionConfig.transition.createAnimatedStyles(transitionProps)
-    : TransitionConfigs.defaultTransitionConfig(transitionProps).screenInterpolator(transitionProps));
-}
-
 function createTransitionComponent(Component) {
   class TransitionComponent extends React.Component {
     _component: any;
@@ -54,6 +48,23 @@ function createTransitionComponent(Component) {
       this._component.setNativeProps(props);
     }
 
+    _createAnimatedStyle() {
+      const {id} = this.props;
+      const {routeName, prevRouteName, transitionProps, transitionConfigs} = this.context;
+      const transitionConfig = findTransitionConfig(transitionConfigs, routeName, prevRouteName);
+      const transition = transitionConfig && transitionConfig.transition;
+      const appliesToMe = transition && (!!!transition.filter || transition.filter(id));
+      if (transition && appliesToMe) {
+        return (transition.shouldClone && transition.shouldClone(id, routeName)
+          ? this._hideTransitionViewUntilDone(transitionProps)
+          : transition.createAnimatedStyle(id, routeName, transitionProps)
+        );
+      } else {
+        // TODO this default should be set somewhere else
+        return {};//TransitionConfigs.defaultTransitionConfig(transitionProps).screenInterpolator(transitionProps));
+      }
+    }
+
     render() {
       // collapsable={false} is required for UIManager.measureInWindow to get the actual measurements
       // instead of undefined, see https://github.com/facebook/react-native/issues/9382
@@ -64,12 +75,13 @@ function createTransitionComponent(Component) {
         </View>
       )*/
       const {id, ...rest} = this.props;
-      const {routeName, prevRouteName, transitionProps, transitionConfigs} = this.context;
-      const transitionConfig = findTransitionConfig(transitionConfigs, routeName, prevRouteName);
       const AnimatedComponent = createAnimatedComponent(Component);
+      const animatedStyle = this._createAnimatedStyle();
       return (
-        <AnimatedComponent {...rest} ref={c => this._component = c}
-          style={[this.props.style, createAnimatedStyle(transitionProps, transitionConfig)]}
+        <AnimatedComponent {...rest}
+          ref={c => this._component = c}
+          collapsable={false}
+          style={[this.props.style, animatedStyle]}
         />
       );
     }
