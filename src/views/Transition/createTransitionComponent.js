@@ -35,8 +35,8 @@ function createTransitionComponent(Component) {
   class TransitionComponent extends React.Component {
     _component: any;
     static contextTypes = {
-      registerTransitionView: React.PropTypes.func,
-      unregisterTransitionView: React.PropTypes.func,
+      registerTransitionItem: React.PropTypes.func,
+      unregisterTransitionItem: React.PropTypes.func,
       transitionProps: React.PropTypes.object,
       transitionConfigs: React.PropTypes.array,
       routeName: React.PropTypes.string,
@@ -87,11 +87,11 @@ function createTransitionComponent(Component) {
     }
 
     componentDidMount() {
-      const { registerTransitionView } = this.context;
-      if (!registerTransitionView) return;
+      const { registerTransitionItem } = this.context;
+      if (!registerTransitionItem) return;
 
       const nativeHandle = findNodeHandle(this._component);
-      registerTransitionView(new TransitionItem
+      registerTransitionItem(new TransitionItem
         (
         this.props.id,
         this.context.routeName,
@@ -101,10 +101,10 @@ function createTransitionComponent(Component) {
     }
 
     componentWillUnmount() {
-      const { unregisterTransitionView } = this.context;
-      if (!unregisterTransitionView) return;
+      const { unregisterTransitionItem } = this.context;
+      if (!unregisterTransitionItem) return;
 
-      unregisterTransitionView(this.props.id, this.context.routeName);
+      unregisterTransitionItem(this.props.id, this.context.routeName);
     }
   }
   return TransitionComponent;

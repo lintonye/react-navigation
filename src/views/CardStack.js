@@ -37,6 +37,8 @@ import type { TransitionConfig } from './TransitionConfigs';
 
 import TransitionConfigs from './TransitionConfigs';
 
+import TransitionItems from './Transition/TransitionItems';
+
 const NativeAnimatedModule = NativeModules && NativeModules.NativeAnimatedModule;
 
 type Props = {
@@ -68,12 +70,17 @@ type DefaultProps = {
   headerComponent: ReactClass<*>,
 };
 
+type State = {
+  transitionItems: TransitionItems,
+};
+
 class CardStack extends Component<DefaultProps, Props, void> {
   _render: NavigationSceneRenderer;
   _renderScene: NavigationSceneRenderer;
   _childNavigationProps: {
     [key: string]: NavigationScreenProp<*, NavigationAction>
   } = {};
+  state: State;
 
   static Card = Card;
   static Header = Header;
@@ -147,11 +154,57 @@ class CardStack extends Component<DefaultProps, Props, void> {
     style: View.propTypes.style,
   };
 
+  static childContextTypes = {
+    registerTransitionItem: React.PropTypes.func,
+    unregisterTransitionItem: React.PropTypes.func,
+  }
+
   static defaultProps: DefaultProps = {
     mode: 'card',
     gesturesEnabled: Platform.OS === 'ios',
     headerComponent: Header,
   };
+
+  constructor(props: Props, context) {
+    super(props, context);
+    this.state = {
+      transitionItems: new TransitionItems(),
+    }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.props !== nextProps) {
+      return true;
+    } else {
+      // TODO change this when/if state has other things.
+      return false;
+    }
+  }
+
+  getChildContext() {
+    const self = this;
+    return {
+      registerTransitionItem(item: TransitionItem) {
+        self.setState((prevState: State) => ({
+          transitionItems: prevState.transitionItems.add(item),
+        }));
+        // const {name, containerRouteName} = TransitionItem;
+        // const matchingItem = self.state.TransitionItems.findMatchByName(name, containerRouteName);
+        // // schedule to measure (on layout) if another Item with the same name is mounted
+        // if (matchingItem) {
+        //   self.setState((prevState: State) => ({
+        //     TransitionItems: prevState.TransitionItems,
+        //     itemsToMeasure: [...prevState.itemsToMeasure, TransitionItem, matchingItem]
+        //   }));
+        // }
+      },
+      unregisterTransitionItem(id: string, routeName: string) {
+        self.setState((prevState: State) => ({
+          transitionItems: prevState.transitionItems.remove(id, routeName),
+        }));
+      },
+    };
+  }
 
   componentWillMount() {
     this._render = this._render.bind(this);
