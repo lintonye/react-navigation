@@ -87,6 +87,21 @@ const MainScreen = ({ navigation }) => (
   </ScrollView>
 );
 
+const CrossFade = () => ({
+  createAnimatedStyles(transitionProps) {
+    const {position, scene:{index}} = transitionProps;
+    const opacity = position.interpolate({
+      inputRange: [index-1, index, index+1],
+      outputRange: [0, 1, 0],
+    });
+    return { opacity };
+  }
+});
+
+const transitions = [
+  {from: 'Index', to: 'SimpleStack', transition: CrossFade()},
+]
+
 const AppNavigator = StackNavigator({
   ...ExampleRoutes,
   Index: {
@@ -101,6 +116,7 @@ const AppNavigator = StackNavigator({
    * which conflicts with the drawer example gesture
    */
   mode: Platform.OS === 'ios' ? 'modal' : 'card',
+  transitions,
 });
 
 export default () => <AppNavigator />;
