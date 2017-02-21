@@ -2,7 +2,6 @@ import {
   View,
   Image,
 } from 'react-native';
-import TransitionView from './TransitionView';
 import TransitionItems from './TransitionItems';
 import createTransitionComponent from './createTransitionComponent';
 
