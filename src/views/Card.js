@@ -11,6 +11,7 @@ import CardStackPanResponder from './CardStackPanResponder';
 import CardStackStyleInterpolator from './CardStackStyleInterpolator';
 import createPointerEventsContainer from './PointerEventsContainer';
 import NavigationPropTypes from '../PropTypes';
+import Transition from './Transition';
 
 import type {
   NavigationPanHandlers,
@@ -43,6 +44,22 @@ class Card extends React.Component<any, Props, any> {
     style: PropTypes.any,
   };
 
+  static childContextTypes = {
+    transitionProps: React.PropTypes.object.isRequired,
+    transitionConfigs: React.PropTypes.array.isRequired,
+    routeName: React.PropTypes.string.isRequired,
+  };
+
+  props: Props;
+
+  getChildContext() {
+    return {
+      transitionProps: this.props.transitionProps,
+      transitionConfigs: this.props.transitionConfigs,
+      routeName: this.props.scene.route.routeName,
+    };
+  }
+
   render() {
     const {
       panHandlers,
@@ -64,14 +81,15 @@ class Card extends React.Component<any, Props, any> {
       panHandlers;
 
     return (
-      <Animated.View
+      <Transition.View
+        id={`$scene-${this.props.scene.route.routeName}`}
         {...viewPanHandlers}
         pointerEvents={pointerEvents}
         ref={this.props.onComponentRef}
         style={[styles.main, viewStyle]}
       >
         {renderScene(props)}
-      </Animated.View>
+      </Transition.View>
     );
   }
 }

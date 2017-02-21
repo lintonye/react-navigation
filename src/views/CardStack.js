@@ -338,8 +338,9 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const isModal = this.props.mode === 'modal';
 
     /* $FlowFixMe */
-    const { screenInterpolator } = this._getTransitionConfig();
-    const style = screenInterpolator && screenInterpolator(props);
+    // const { screenInterpolator } = this._getTransitionConfig();
+    // const style = screenInterpolator && screenInterpolator(props);
+    const style = null;
 
     let panHandlers = null;
 
@@ -369,6 +370,8 @@ class CardStack extends Component<DefaultProps, Props, void> {
         panHandlers={panHandlers}
         renderScene={(sceneProps: *) => this._renderInnerCard(SceneComponent, sceneProps)}
         style={[style, this.props.cardStyle]}
+        transitionProps={props}
+        transitionConfigs={this.props.transitionConfigs}
       />
     );
   }
