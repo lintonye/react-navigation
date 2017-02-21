@@ -337,11 +337,6 @@ class CardStack extends Component<DefaultProps, Props, void> {
   _renderScene(props: NavigationSceneRendererProps): React.Element<*> {
     const isModal = this.props.mode === 'modal';
 
-    /* $FlowFixMe */
-    // const { screenInterpolator } = this._getTransitionConfig();
-    // const style = screenInterpolator && screenInterpolator(props);
-    const style = null;
-
     let panHandlers = null;
 
     if (this.props.gesturesEnabled) {
@@ -369,7 +364,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
         key={`card_${props.scene.key}`}
         panHandlers={panHandlers}
         renderScene={(sceneProps: *) => this._renderInnerCard(SceneComponent, sceneProps)}
-        style={[style, this.props.cardStyle]}
+        style={this.props.cardStyle}
         transitionProps={props}
         transitionConfigs={this.props.transitionConfigs}
       />
