@@ -9,23 +9,23 @@ export type Metrics = {
 }
 
 export class TransitionItem {
-  name: string;
-  containerRouteName: string;
+  id: string;
+  routeName: string;
   reactElement: React.Element<*>;
   nativeHandle: any;
   metrics: ?Metrics;
-  constructor(name: string, containerRouteName: string, reactElement: React.Element<*>, nativeHandle: any, metrics:?Metrics) {
-    this.name = name;
-    this.containerRouteName = containerRouteName;
+  constructor(id: string, routeName: string, reactElement: React.Element<*>, nativeHandle: any, metrics:?Metrics) {
+    this.id = id;
+    this.routeName = routeName;
     this.reactElement = reactElement;
     this.nativeHandle = nativeHandle;
     this.metrics = metrics;
   }
   clone() {
-    return new TransitionItem(this.name, this.containerRouteName, this.reactElement, this.nativeHandle, this.metrics);
+    return new TransitionItem(this.id, this.routeName, this.reactElement, this.nativeHandle, this.metrics);
   }
   toString() {
-    return `${this.name} ${this.containerRouteName} ${JSON.stringify(this.metrics)}`;
+    return `${this.id} ${this.routeName} ${JSON.stringify(this.metrics)}`;
   }
 }
 
@@ -35,8 +35,8 @@ type ItemPair = {
 };
 
 export type UpdateRequest = {
-  name: string,
-  containerRouteName: string,
+  id: string,
+  routeName: string,
   metrics: ?Metrics,
 }
 
@@ -45,23 +45,23 @@ class TransitionItems {
   constructor(items: Array<TransitionItem> = []) {
     this._items = [...items];
   }
-  _findIndex(name: string, containerRouteName: string): number {
+  _findIndex(id: string, routeName: string): number {
     return this._items.findIndex(i => {
-      return i.name === name && i.containerRouteName === containerRouteName;
+      return i.id === id && i.routeName === routeName;
     });
   }
   count() {
     return this._items.length;
   }
   add(item: TransitionItem): TransitionItems {
-    if (this._findIndex(item.name, item.containerRouteName) >= 0)
+    if (this._findIndex(item.id, item.routeName) >= 0)
       return this;
     else {
       return new TransitionItems([...this._items, item]);
     }
   }
-  remove(name: string, containerRouteName: string): TransitionItems {
-    const index = this._findIndex(name, containerRouteName);
+  remove(id: string, routeName: string): TransitionItems {
+    const index = this._findIndex(id, routeName);
     if (index >= 0) {
       const newItems = [...this._items.slice(0, index), ...this._items.slice(index + 1)];
       return new TransitionItems(newItems);
@@ -72,7 +72,7 @@ class TransitionItems {
   updateMetrics(requests: Array<UpdateRequest>): TransitionItems {
     const indexedRequests = requests.map(r => ({
       ...r,
-      index: this._findIndex(r.name, r.containerRouteName),
+      index: this._findIndex(r.id, r.routeName),
     }));
 
     if (indexedRequests.every(r => r.index < 0)) return this;
@@ -99,21 +99,21 @@ class TransitionItems {
       return new TransitionItems(newItems);
     } else return this;
   }
-  _getNamePairMap(fromRoute: string, toRoute: string) {
+  _getIdPairMap(fromRoute: string, toRoute: string) {
     //TODO cache the map. Since the object is immutable, no need to worry about updates to _items
-    const nameMap = this._items.reduce((map, item) => {
-      let pairByName = map.get(item.name);
+    const idMap = this._items.reduce((map, item) => {
+      let pairByName = map.get(item.id);
       if (!pairByName) {
         pairByName = {};
-        map.set(item.name, pairByName);
+        map.set(item.id, pairByName);
       }
-      if (item.containerRouteName === fromRoute) pairByName.fromItem = item;
-      if (item.containerRouteName === toRoute) pairByName.toItem = item;
+      if (item.routeName === fromRoute) pairByName.fromItem = item;
+      if (item.routeName === toRoute) pairByName.toItem = item;
       // delete empty pairs
-      if (!pairByName.fromItem && !pairByName.toItem) map.delete(item.name);
+      if (!pairByName.fromItem && !pairByName.toItem) map.delete(item.id);
       return map;
     }, new Map());
-    return nameMap;
+    return idMap;
   }
   isMeatured(p: ItemPair) {
     const isNumber = n => typeof n === 'number';
@@ -123,18 +123,13 @@ class TransitionItems {
       && metricsValid(fromItem.metrics) && metricsValid(toItem.metrics);
   }
   getMeasuredItemPairs(fromRoute: string, toRoute: string): Array<ItemPair> {
-    const nameMap = this._getNamePairMap(fromRoute, toRoute);
-    // console.log('getMeasuredItemPairs.nameMap', Array.from(nameMap.values()).map(p => `fromItem:${p.fromItem ? p.fromItem.toString() : 'null'} toItem:${p.toItem ? p.toItem.toString() : 'null'}`));
-    return Array.from(nameMap.values())
+    const idMap = this._getIdPairMap(fromRoute, toRoute);
+    // console.log('getMeasuredItemPairs.idMap', Array.from(idMap.values()).map(p => `fromItem:${p.fromItem ? p.fromItem.toString() : 'null'} toItem:${p.toItem ? p.toItem.toString() : 'null'}`));
+    return Array.from(idMap.values())
       .filter(this.isMeatured);
   }
-  findMatchByName(name: string, routeToExclude: string): ?TransitionItem {
-    return this._items.find(i => i.name === name && i.containerRouteName !== routeToExclude);
-  }
-  areMetricsReadyForAllPairs(fromRoute: string, toRoute: string): boolean {
-    const nameMap = this._getNamePairMap(fromRoute, toRoute);
-    return Array.from(nameMap.values())
-      .every(this.isMeatured);
+  findMatchByName(id: string, routeToExclude: string): ?TransitionItem {
+    return this._items.find(i => i.id === id && i.routeName !== routeToExclude);
   }
 }
 
