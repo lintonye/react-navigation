@@ -27,16 +27,14 @@ const createAnimatedComponent = Component => {
   return Animated.createAnimatedComponent(C);
 };
 
-function findTransitionConfig(transitionProps, transitionConfigs) {
-  // TODO return transitionConfig by from/to route
-  return transitionConfigs && transitionConfigs[0];
+function findTransitionConfig(transitionConfigs: Array<*>, routeName: string, prevRouteName: string) {
+  return transitionConfigs.find(c => c.from === prevRouteName && c.to === routeName);
 }
 
-function createAnimatedStyle(transitionProps, transitionConfigs) {
-    const config = findTransitionConfig(transitionProps, transitionConfigs);
-    return (config 
-      ? config.transition.createAnimatedStyles(transitionProps)
-      : TransitionConfigs.defaultTransitionConfig(transitionProps).screenInterpolator(transitionProps));
+function createAnimatedStyle(transitionProps, transitionConfig) {
+  return (transitionConfig
+    ? transitionConfig.transition.createAnimatedStyles(transitionProps)
+    : TransitionConfigs.defaultTransitionConfig(transitionProps).screenInterpolator(transitionProps));
 }
 
 function createTransitionComponent(Component) {
@@ -48,6 +46,7 @@ function createTransitionComponent(Component) {
       transitionProps: React.PropTypes.object,
       transitionConfigs: React.PropTypes.array,
       routeName: React.PropTypes.string,
+      prevRouteName: React.PropTypes.string,
     };
 
     // This is needed to pass the invariant in PointerEventsContainer
@@ -65,11 +64,12 @@ function createTransitionComponent(Component) {
         </View>
       )*/
       const {id, ...rest} = this.props;
-      const {routeName, transitionProps, transitionConfigs} = this.context;
+      const {routeName, prevRouteName, transitionProps, transitionConfigs} = this.context;
+      const transitionConfig = findTransitionConfig(transitionConfigs, routeName, prevRouteName);
       const AnimatedComponent = createAnimatedComponent(Component);
       return (
         <AnimatedComponent {...rest} ref={c => this._component = c}
-          style={[this.props.style, createAnimatedStyle(transitionProps, transitionConfigs)]}
+          style={[this.props.style, createAnimatedStyle(transitionProps, transitionConfig)]}
         />
       );
     }

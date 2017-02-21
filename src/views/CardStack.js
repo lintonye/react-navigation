@@ -236,12 +236,15 @@ class CardStack extends Component<DefaultProps, Props, void> {
     );
   }
 
-  _render(props: NavigationTransitionProps): React.Element<*> {
+  _render(
+      props: NavigationTransitionProps, 
+      prevTransitionProps:NavigationTransitionProps): React.Element<*> {
     let floatingHeader = null;
     const headerMode = this._getHeaderMode();
     if (headerMode === 'float') {
       floatingHeader = this._renderHeader(props, headerMode);
     }
+    const prevRouteName = prevTransitionProps && prevTransitionProps.scene.route.routeName;
     return (
       <View style={styles.container}>
         <View
@@ -252,7 +255,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
               ...props,
               scene,
               navigation: this._getChildNavigation(scene),
-            })
+            }, prevRouteName)
           )}
         </View>
         {floatingHeader}
@@ -334,7 +337,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     return navigation;
   }
 
-  _renderScene(props: NavigationSceneRendererProps): React.Element<*> {
+  _renderScene(props: NavigationSceneRendererProps, prevRouteName: string): React.Element<*> {
     const isModal = this.props.mode === 'modal';
 
     let panHandlers = null;
@@ -367,6 +370,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
         style={this.props.cardStyle}
         transitionProps={props}
         transitionConfigs={this.props.transitionConfigs}
+        prevRouteName={prevRouteName}
       />
     );
   }

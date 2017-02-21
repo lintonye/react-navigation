@@ -48,6 +48,7 @@ class Card extends React.Component<any, Props, any> {
     transitionProps: React.PropTypes.object.isRequired,
     transitionConfigs: React.PropTypes.array.isRequired,
     routeName: React.PropTypes.string.isRequired,
+    prevRouteName: React.PropTypes.string,
   };
 
   props: Props;
@@ -57,6 +58,7 @@ class Card extends React.Component<any, Props, any> {
       transitionProps: this.props.transitionProps,
       transitionConfigs: this.props.transitionConfigs,
       routeName: this.props.scene.route.routeName,
+      prevRouteName: this.props.prevRouteName,
     };
   }
 
@@ -68,10 +70,6 @@ class Card extends React.Component<any, Props, any> {
       style,
       ...props /* NavigationSceneRendererProps */
     } = this.props;
-
-    const viewStyle = style === undefined ?
-      CardStackStyleInterpolator.forHorizontal(props) :
-      style;
 
     const viewPanHandlers = panHandlers === undefined ?
       CardStackPanResponder.forHorizontal({
@@ -86,7 +84,7 @@ class Card extends React.Component<any, Props, any> {
         {...viewPanHandlers}
         pointerEvents={pointerEvents}
         ref={this.props.onComponentRef}
-        style={[styles.main, viewStyle]}
+        style={styles.main}
       >
         {renderScene(props)}
       </Transition.View>
