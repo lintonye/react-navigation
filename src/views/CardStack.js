@@ -335,10 +335,6 @@ class CardStack extends Component<DefaultProps, Props, void> {
     }
   }
 
-  _defaultTransition(transitionProps: NavigationTransitionProps) {
-    //TODO
-  }
-
   _getTransitionStyleMap(transitionProps: NavigationTransitionProps, prevRouteName: ?string) {
     const routeName = transitionProps.scene.route.routeName;
     const transitions = this.props.transitionConfigs.filter(c => (
@@ -351,7 +347,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
     // console.log(`===> onFrom: ${prevRouteName}`, itemsOnFromRoute.length, `==> onTo: ${routeName}`, itemsOnToRoute.length);
 
-    const transition = transitions[0] || this._defaultTransition(transitionProps);
+    const transition = transitions[0];
     return this._createTransitionStyleMap(itemsOnFromRoute, itemsOnToRoute, transition, transitionProps);
   }
 
