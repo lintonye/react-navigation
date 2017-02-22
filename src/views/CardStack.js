@@ -331,8 +331,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
         to: this._hideTransitionViewIfClone(styleMap.to, transitionProps, filteredItemsTo, transition, false),
       }
     } else {
-      // TODO this default should be set somewhere else
-      return {};//TransitionConfigs.defaultTransitionConfig(transitionProps).screenInterpolator(transitionProps));
+      return {};
     }
   }
 
