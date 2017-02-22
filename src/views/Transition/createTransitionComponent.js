@@ -33,9 +33,9 @@ const createAnimatedComponent = Component => {
   return Animated.createAnimatedComponent(C);
 };
 
-function findTransitionConfig(transitionConfigs: Array<*>, routeName: string, prevRouteName: string) {
-  return transitionConfigs.find(c => c.from === prevRouteName && c.to === routeName);
-}
+// function findTransitionConfig(transitionConfigs: Array<*>, routeName: string, prevRouteName: string) {
+//   return transitionConfigs.find(c => c.from === prevRouteName && c.to === routeName);
+// }
 
 function createTransitionComponent(Component) {
   class TransitionComponent extends React.Component {
