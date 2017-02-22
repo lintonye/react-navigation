@@ -109,7 +109,7 @@ function createTransitionComponent(Component) {
       const { registerTransitionItem } = this.context;
       if (!registerTransitionItem) return;
 
-      const nativeHandle = findNodeHandle(this._component);
+      const nativeHandle = findNodeHandle(this);
       registerTransitionItem(new TransitionItem
         (
         this.props.id,

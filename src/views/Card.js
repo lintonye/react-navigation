@@ -85,6 +85,7 @@ class Card extends React.Component<any, Props, any> {
         pointerEvents={pointerEvents}
         ref={this.props.onComponentRef}
         style={styles.main}
+        onLayout={this.props.onLayout}
       >
         {renderScene(props)}
       </Transition.View>

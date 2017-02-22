@@ -6,6 +6,7 @@ import {
   NativeModules,
   Platform,
   View,
+  UIManager,
 } from 'react-native';
 import invariant from 'invariant';
 
@@ -73,6 +74,7 @@ type DefaultProps = {
 
 type State = {
   transitionItems: TransitionItems,
+  itemsToMeasure: Array<TransitionItem>,
 };
 
 class CardStack extends Component<DefaultProps, Props, void> {
@@ -168,9 +170,9 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
   constructor(props: Props, context) {
     super(props, context);
-    this._render = this._render.bind(this);
     this.state = {
       transitionItems: new TransitionItems(),
+      itemsToMeasure: null,
     }
   }
 
@@ -178,8 +180,16 @@ class CardStack extends Component<DefaultProps, Props, void> {
     if (this.props !== nextProps) {
       return true;
     } else {
-      // TODO change this when/if state has other things.
-      return false;
+      return nextState.itemsToMeasure && nextState.itemsToMeasure.length === 0;
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.navigation !== this.props.navigation) {
+      this.setState({
+        ...this.state,
+        itemsToMeasure: [...this.state.transitionItems.items()],
+      });
     }
   }
 
@@ -471,6 +481,43 @@ class CardStack extends Component<DefaultProps, Props, void> {
     return navigation;
   }
 
+  _measure(item: TransitionItem): Promise < Metrics > {
+    // console.log('measuring:', item.id, item.routeName)
+    return new Promise((resolve, reject) => {
+      UIManager.measureInWindow(
+        item.nativeHandle,
+        (x, y, width, height) => {
+          if (x && y && width && height)
+            resolve({ x, y, width, height });
+          else
+            reject(`x=${x}, y=${y}, width=${width}, height=${height}. The view (${item.nativeHandle}) is not found.  Is it collapsed on Android?`);
+        }
+      );
+    });
+  }
+
+  async _onLayout() {
+    let toUpdate = [];
+    if (this.state.itemsToMeasure) {
+      for (let item of this.state.itemsToMeasure) {
+        const { name, routeName } = item;
+        try {
+          const metrics = await this._measure(item);
+          toUpdate.push({ name, routeName, metrics });
+        } catch (err) {
+          console.warn(err);
+        }
+      }
+      if (toUpdate.length > 0) {
+        console.log('measured, setting meatured state:', toUpdate)
+        this.setState((prevState: State): State => ({
+          transitionItems: prevState.transitionItems.updateMetrics(toUpdate),
+          itemsToMeasure: [],
+        }));
+      }
+    }
+  }
+
   _renderScene(props: NavigationSceneRendererProps, transitionStyleMap): React.Element<*> {
     const isModal = this.props.mode === 'modal';
 
@@ -499,6 +546,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
       <Card
         {...props}
         key={`card_${props.scene.key}`}
+        onLayout={this._onLayout.bind(this)}
         panHandlers={panHandlers}
         renderScene={(sceneProps: *) => this._renderInnerCard(SceneComponent, sceneProps)}
         style={this.props.cardStyle}
