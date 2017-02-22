@@ -5,6 +5,7 @@ import createNavigationContainer from '../createNavigationContainer';
 import createNavigator from './createNavigator';
 import CardStack from '../views/CardStack';
 import StackRouter from '../routers/StackRouter';
+import TransitionConfigs from '../views/TransitionConfigs';
 
 import type {
   NavigationContainerConfig,
@@ -49,7 +50,7 @@ export default (routeConfigMap: NavigationRouteConfigMap, stackConfig: StackNavi
       cardStyle={cardStyle}
       onTransitionStart={onTransitionStart}
       onTransitionEnd={onTransitionEnd}
-      transitionConfigs={transitions || []}
+      transitionConfigs={transitions || TransitionConfigs.defaultTransitions()}
     />
   )), containerOptions);
 };

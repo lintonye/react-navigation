@@ -344,7 +344,9 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
   _getTransitionStyleMap(transitionProps: NavigationTransitionProps, prevRouteName: ?string) {
     const routeName = transitionProps.scene.route.routeName;
-    const transitions = this.props.transitionConfigs.filter(c => c.from === prevRouteName && c.to === routeName);
+    const transitions = this.props.transitionConfigs.filter(c => (
+      (c.from === prevRouteName || c.from === '*') &&
+      (c.to === routeName || c.to === '*')));
     invariant(transitions.length <= 1, `More than one transitions found from "${prevRouteName}" to "${routeName}".`);
 
     const itemsOnFromRoute = this.state.transitionItems.items().filter(item => item.routeName === prevRouteName);

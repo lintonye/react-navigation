@@ -4,6 +4,9 @@ import {
 
 import PhotoGrid from './PhotoGrid';
 import PhotoDetail from './PhotoDetail';
+import {Transition} from 'react-navigation';
+
+const {createTransition} = Transition;
 
 const SharedElements = (filter) => ({
   filter,
@@ -44,14 +47,6 @@ const CrossFade = (filter) => ({
     };
   }
 })
-
-function createIdRegexFilter(idRegexes) {
-  return (id: string) => idRegexes.every(idRegex => id.match(idRegex));
-}
-
-function createTransition(Transition, ...idRegexes) {
-  return Transition(createIdRegexFilter(idRegexes));
-}
 
 const SharedImage = createTransition(SharedElements, /image-.+/);
 const CrossFadeScene = createTransition(CrossFade, /\$scene.+/);

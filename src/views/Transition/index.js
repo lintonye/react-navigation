@@ -5,10 +5,12 @@ import {
 } from 'react-native';
 import TransitionItems from './TransitionItems';
 import createTransitionComponent from './createTransitionComponent';
+import createTransition from './createTransition';
 
 export default {
   View: createTransitionComponent(View),
   Image: createTransitionComponent(Image),
   Text: createTransitionComponent(Text),
   createTransitionComponent,
+  createTransition,
 }

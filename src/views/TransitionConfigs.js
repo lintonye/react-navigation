@@ -2,12 +2,13 @@
 
 import type {
   NavigationSceneRendererProps,
-  NavigationTransitionProps,
-  NavigationTransitionSpec,
+    NavigationTransitionProps,
+    NavigationTransitionSpec,
 } from '../TypeDefinition';
 
 import CardStackStyleInterpolator from './CardStackStyleInterpolator';
 import HeaderStyleInterpolator from './HeaderStyleInterpolator';
+import Transition from './Transition';
 
 import {
   Animated,
@@ -93,7 +94,33 @@ function defaultTransitionConfig(
   }
 }
 
+const defaultTransition = (filter) => ({
+  filter,
+  createAnimatedStyleMap(
+    itemsOnFromRoute: Array<*>, 
+    itemsOnToRoute: Array<*>, 
+    transitionProps) {
+      const createStyles = (items: Array<*>) => items.reduce((result, item) => {
+        const isModal = false; //TODO how to determine this here
+        const interpolator = defaultTransitionConfig(transitionProps, null, isModal).screenInterpolator;
+        result[item.id] = interpolator(transitionProps);
+        return result;
+      }, {});
+    return {
+      from: createStyles(itemsOnFromRoute),
+      to: createStyles(itemsOnToRoute),
+    };
+  }
+});
+
+const DefaultSceneTransition = Transition.createTransition(defaultTransition, /\$scene-.+/);
+
+const defaultTransitions = () => [
+  { from: '*', to: '*', transition: DefaultSceneTransition }
+];
+
 export default {
   DefaultTransitionSpec,
   defaultTransitionConfig,
+  defaultTransitions,
 };
