@@ -7,6 +7,7 @@ import {
   Platform,
   View,
 } from 'react-native';
+import invariant from 'invariant';
 
 import Transitioner from './Transitioner';
 import Card from './Card';
@@ -167,6 +168,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
   constructor(props: Props, context) {
     super(props, context);
+    this._render = this._render.bind(this);
     this.state = {
       transitionItems: new TransitionItems(),
     }
@@ -289,6 +291,61 @@ class CardStack extends Component<DefaultProps, Props, void> {
     );
   }
 
+  _hideTransitionViewUntilDone(transitionProps) {
+    const {position, scene: {index}} = transitionProps;
+    const opacity = position.interpolate({
+      inputRange: [index - 1, index - 0.01, index, index + 0.01, index + 1],
+      outputRange: [0, 0, 1, 0, 0],
+    });
+    return { opacity };
+  }
+
+  _createTransitionStyleMap(itemsOnFromRoute, itemsOnToRoute, transitionConfig, transitionProps) {
+    const transition = transitionConfig && transitionConfig.transition;
+    const filterItems = (items:Array<*>) => {
+      return items.filter(item => transition && (!!!transition.filter || transition.filter(item.id)))
+    };
+    const filteredItemsFrom = filterItems(itemsOnFromRoute);
+    const filteredItemsTo = filterItems(itemsOnToRoute);
+    if (transition) {
+      return transition.createAnimatedStyleMap(filteredItemsFrom, filteredItemsTo, transitionProps);
+      // TODO shouldClone etc.
+      // return (transition.shouldClone && transition.shouldClone(id, routeName)
+      //   ? this._hideTransitionViewUntilDone(transitionProps)
+      //   : transition.createAnimatedStyle(id, routeName, transitionProps)
+      // );
+    } else {
+      // TODO this default should be set somewhere else
+      return {};//TransitionConfigs.defaultTransitionConfig(transitionProps).screenInterpolator(transitionProps));
+    }
+  }
+
+  _defaultTransition(transitionProps: NavigationTransitionProps) {
+    //TODO
+  }
+
+  _getTransitionStyleMap(transitionProps: NavigationTransitionProps, prevRouteName: ?string) {
+    const routeName = transitionProps.scene.route.routeName;
+    const transitions = this.props.transitionConfigs.filter(c => c.from === prevRouteName && c.to === routeName);
+    invariant(transitions.length <= 1, `More than one transitions found from "${prevRouteName}" to "${routeName}".`);
+
+    const itemsOnFromRoute = this.state.transitionItems.items().filter(item => item.routeName === prevRouteName);
+    const itemsOnToRoute = this.state.transitionItems.items().filter(item => item.routeName === routeName);
+
+    console.log(`===> onFrom: ${prevRouteName}`, itemsOnFromRoute.length, `==> onTo: ${routeName}`, itemsOnToRoute.length);
+
+    const transition = transitions[0] || this._defaultTransition(transitionProps);
+    return this._createTransitionStyleMap(itemsOnFromRoute, itemsOnToRoute, transition, transitionProps);
+  }
+
+  _replaceFromToInStyleMap(styleMap, routeName: string, prevRouteName: ?string) {
+    return {
+      ...styleMap,
+      [prevRouteName || '$from']: styleMap.from, //TODO what should we do if prevRouteName === null?
+      [routeName]: styleMap.to,
+    }
+  }
+
   _render(
       props: NavigationTransitionProps, 
       prevTransitionProps:NavigationTransitionProps): React.Element<*> {
@@ -297,7 +354,11 @@ class CardStack extends Component<DefaultProps, Props, void> {
     if (headerMode === 'float') {
       floatingHeader = this._renderHeader(props, headerMode);
     }
+    const routeName = props && props.scene.route.routeName;
     const prevRouteName = prevTransitionProps && prevTransitionProps.scene.route.routeName;
+    const transitionStyleMap = this._getTransitionStyleMap(props, prevRouteName);
+    const populatedStyleMap = this._replaceFromToInStyleMap(transitionStyleMap, routeName, prevRouteName);
+    // console.log('========> styleMap', populatedStyleMap);
     return (
       <View style={styles.container}>
         <View
@@ -308,7 +369,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
               ...props,
               scene,
               navigation: this._getChildNavigation(scene),
-            }, prevRouteName)
+            }, populatedStyleMap)
           )}
         </View>
         {floatingHeader}
@@ -390,7 +451,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     return navigation;
   }
 
-  _renderScene(props: NavigationSceneRendererProps, prevRouteName: string): React.Element<*> {
+  _renderScene(props: NavigationSceneRendererProps, transitionStyleMap): React.Element<*> {
     const isModal = this.props.mode === 'modal';
 
     let panHandlers = null;
@@ -423,7 +484,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
         style={this.props.cardStyle}
         transitionProps={props}
         transitionConfigs={this.props.transitionConfigs}
-        prevRouteName={prevRouteName}
+        transitionStyleMap={transitionStyleMap}
       />
     );
   }

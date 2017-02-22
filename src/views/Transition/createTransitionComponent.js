@@ -40,7 +40,7 @@ function createTransitionComponent(Component) {
       transitionProps: React.PropTypes.object,
       transitionConfigs: React.PropTypes.array,
       routeName: React.PropTypes.string,
-      prevRouteName: React.PropTypes.string,
+      transitionStyleMap: React.PropTypes.object,
     };
 
     // This is needed to pass the invariant in PointerEventsContainer
@@ -57,21 +57,24 @@ function createTransitionComponent(Component) {
       return { opacity };
     }
 
-    _createAnimatedStyle() {
+    _getTransitionStyle() {
+      // const {id} = this.props;
+      // const {routeName, prevRouteName, transitionProps, transitionConfigs} = this.context;
+      // const transitionConfig = findTransitionConfig(transitionConfigs, routeName, prevRouteName);
+      // const transition = transitionConfig && transitionConfig.transition;
+      // const appliesToMe = transition && (!!!transition.filter || transition.filter(id));
+      // if (transition && appliesToMe) {
+      //   return (transition.shouldClone && transition.shouldClone(id, routeName)
+      //     ? this._hideTransitionViewUntilDone(transitionProps)
+      //     : transition.createAnimatedStyle(id, routeName, transitionProps)
+      //   );
+      // } else {
+      //   // TODO this default should be set somewhere else
+      //   return {};//TransitionConfigs.defaultTransitionConfig(transitionProps).screenInterpolator(transitionProps));
+      // }
       const {id} = this.props;
-      const {routeName, prevRouteName, transitionProps, transitionConfigs} = this.context;
-      const transitionConfig = findTransitionConfig(transitionConfigs, routeName, prevRouteName);
-      const transition = transitionConfig && transitionConfig.transition;
-      const appliesToMe = transition && (!!!transition.filter || transition.filter(id));
-      if (transition && appliesToMe) {
-        return (transition.shouldClone && transition.shouldClone(id, routeName)
-          ? this._hideTransitionViewUntilDone(transitionProps)
-          : transition.createAnimatedStyle(id, routeName, transitionProps)
-        );
-      } else {
-        // TODO this default should be set somewhere else
-        return {};//TransitionConfigs.defaultTransitionConfig(transitionProps).screenInterpolator(transitionProps));
-      }
+      const {routeName, transitionStyleMap} = this.context;
+      return transitionStyleMap[routeName] && transitionStyleMap[routeName][id];
     }
 
     render() {
@@ -85,7 +88,7 @@ function createTransitionComponent(Component) {
       )*/
       const {id, ...rest} = this.props;
       const AnimatedComponent = createAnimatedComponent(Component);
-      const animatedStyle = this._createAnimatedStyle();
+      const animatedStyle = this._getTransitionStyle();
       return (
         <AnimatedComponent {...rest}
           ref={c => this._component = c}

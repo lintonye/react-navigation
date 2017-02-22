@@ -53,6 +53,9 @@ class TransitionItems {
   count() {
     return this._items.length;
   }
+  items() {
+    return this._items;
+  }
   add(item: TransitionItem): TransitionItems {
     if (this._findIndex(item.id, item.routeName) >= 0)
       return this;

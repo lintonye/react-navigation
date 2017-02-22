@@ -8,24 +8,39 @@ import PhotoDetail from './PhotoDetail';
 const SharedElements = (filter) => ({
   filter,
   shouldClone(id, routeName) { return true; },
-  createAnimatedStyles(items) { }
+  createAnimatedStyleMap(
+    itemsOnFromRoute: Array<*>, 
+    itemsOnToRoute: Array<*>, 
+    transitionProps) {
+      //TODO
+  }
 });
 
 const CrossFade = (filter) => ({
   filter,
-  createAnimatedStyle(id: string, routeName: string, transitionProps) {
-    const {position, scene: {index}} = transitionProps;
-    const opacity = position.interpolate({
-      inputRange: [index - 1, index, index + 1],
-      outputRange: [0, 1, 0],
-    });
-    const rotate = position.interpolate({
-      inputRange: [0, 1],
-      outputRange: ['0deg', '360deg'],
-    });
+  createAnimatedStyleMap(
+    itemsOnFromRoute: Array<*>, 
+    itemsOnToRoute: Array<*>, 
+    transitionProps) {
+    const { progress } = transitionProps;
+    const createStyles = (items: Array<*>, toAppear: boolean) => items.reduce((result, item) => {
+      const opacity = progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [toAppear ? 0 : 1, toAppear ? 1 : 0],
+      })
+      const rotate = progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '360deg'],
+      });
+      result[item.id] = {
+        opacity,
+        transform: [{ rotate }],
+      }
+      return result;
+    }, {});
     return {
-      opacity,
-      transform: [{ rotate }]
+      from: createStyles(itemsOnFromRoute, false),
+      to: createStyles(itemsOnToRoute, true),
     };
   }
 })
@@ -42,10 +57,10 @@ const SharedImage = createTransition(SharedElements, /image-.+/);
 const CrossFadeScene = createTransition(CrossFade, /\$scene.+/);
 
 const transitions = [
-  // { from: 'PhotoGrid', to: 'PhotoDetail', transition: CrossFadeScene },
+  { from: 'PhotoGrid', to: 'PhotoDetail', transition: CrossFadeScene },
+  { from: 'PhotoDetail', to: 'PhotoGrid', transition: CrossFadeScene },
+  // { from: 'PhotoGrid', to: 'PhotoDetail', transition: SharedImage },
   // { from: 'PhotoDetail', to: 'PhotoGrid', transition: CrossFadeScene },
-  { from: 'PhotoGrid', to: 'PhotoDetail', transition: SharedImage },
-  { from: 'PhotoDetail', to: 'PhotoGrid', transition: SharedImage },
 ];
 
 const App = StackNavigator({

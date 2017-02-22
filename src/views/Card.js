@@ -48,7 +48,7 @@ class Card extends React.Component<any, Props, any> {
     transitionProps: React.PropTypes.object.isRequired,
     transitionConfigs: React.PropTypes.array.isRequired,
     routeName: React.PropTypes.string.isRequired,
-    prevRouteName: React.PropTypes.string,
+    transitionStyleMap: React.PropTypes.object,
   };
 
   props: Props;
@@ -58,7 +58,7 @@ class Card extends React.Component<any, Props, any> {
       transitionProps: this.props.transitionProps,
       transitionConfigs: this.props.transitionConfigs,
       routeName: this.props.scene.route.routeName,
-      prevRouteName: this.props.prevRouteName,
+      transitionStyleMap: this.props.transitionStyleMap,
     };
   }
 
