@@ -13,7 +13,13 @@ import TransitionConfigs from '../TransitionConfigs';
 
 const statefulize = Component => {
   class Statefulized extends React.Component {
-    render() { return <Component {...this.props} />; }
+    // This is needed to avoid error from PointerEventsContainer
+    setNativeProps(props) {
+      this._component.setNativeProps(props);
+    }
+    render() { 
+      return <Component {...this.props} ref={c => this._component = c}/>; 
+    }
   }
   return Statefulized;
 };
@@ -89,7 +95,7 @@ function createTransitionComponent(Component) {
       const {id, ...rest} = this.props;
       const AnimatedComponent = createAnimatedComponent(Component);
       const animatedStyle = this._getTransitionStyle();
-      // console.log('======> styleInTransitionComp', animatedStyle)
+      // console.log(`======> id=${id} styleInTransitionComp`, animatedStyle)
       return (
         <AnimatedComponent {...rest}
           ref={c => this._component = c}
