@@ -340,7 +340,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
   _replaceFromToInStyleMap(styleMap, routeName: string, prevRouteName: ?string) {
     return {
-      ...styleMap,
+      // ...styleMap,
       [prevRouteName || '$from']: styleMap.from, //TODO what should we do if prevRouteName === null?
       [routeName]: styleMap.to,
     }
@@ -482,8 +482,6 @@ class CardStack extends Component<DefaultProps, Props, void> {
         panHandlers={panHandlers}
         renderScene={(sceneProps: *) => this._renderInnerCard(SceneComponent, sceneProps)}
         style={this.props.cardStyle}
-        transitionProps={props}
-        transitionConfigs={this.props.transitionConfigs}
         transitionStyleMap={transitionStyleMap}
       />
     );
