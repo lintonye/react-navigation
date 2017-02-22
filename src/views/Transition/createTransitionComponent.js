@@ -37,8 +37,8 @@ function createTransitionComponent(Component) {
     static contextTypes = {
       registerTransitionItem: React.PropTypes.func,
       unregisterTransitionItem: React.PropTypes.func,
-      transitionProps: React.PropTypes.object,
-      transitionConfigs: React.PropTypes.array,
+      // transitionProps: React.PropTypes.object,
+      // transitionConfigs: React.PropTypes.array,
       routeName: React.PropTypes.string,
       transitionStyleMap: React.PropTypes.object,
     };
@@ -48,14 +48,14 @@ function createTransitionComponent(Component) {
       this._component.setNativeProps(props);
     }
 
-    _hideTransitionViewUntilDone(transitionProps) {
-      const {position, scene: {index}} = transitionProps;
-      const opacity = position.interpolate({
-        inputRange: [index - 1, index - 0.01, index, index + 0.01, index + 1],
-        outputRange: [0, 0, 1, 0, 0],
-      });
-      return { opacity };
-    }
+    // _hideTransitionViewUntilDone(transitionProps) {
+    //   const {position, scene: {index}} = transitionProps;
+    //   const opacity = position.interpolate({
+    //     inputRange: [index - 1, index - 0.01, index, index + 0.01, index + 1],
+    //     outputRange: [0, 0, 1, 0, 0],
+    //   });
+    //   return { opacity };
+    // }
 
     _getTransitionStyle() {
       // const {id} = this.props;
@@ -89,6 +89,7 @@ function createTransitionComponent(Component) {
       const {id, ...rest} = this.props;
       const AnimatedComponent = createAnimatedComponent(Component);
       const animatedStyle = this._getTransitionStyle();
+      // console.log('======> styleInTransitionComp', animatedStyle)
       return (
         <AnimatedComponent {...rest}
           ref={c => this._component = c}

@@ -45,8 +45,8 @@ class Card extends React.Component<any, Props, any> {
   };
 
   static childContextTypes = {
-    transitionProps: React.PropTypes.object.isRequired,
-    transitionConfigs: React.PropTypes.array.isRequired,
+    // transitionProps: React.PropTypes.object.isRequired,
+    // transitionConfigs: React.PropTypes.array.isRequired,
     routeName: React.PropTypes.string.isRequired,
     transitionStyleMap: React.PropTypes.object,
   };
@@ -55,8 +55,8 @@ class Card extends React.Component<any, Props, any> {
 
   getChildContext() {
     return {
-      transitionProps: this.props.transitionProps,
-      transitionConfigs: this.props.transitionConfigs,
+      // transitionProps: this.props.transitionProps,
+      // transitionConfigs: this.props.transitionConfigs,
       routeName: this.props.scene.route.routeName,
       transitionStyleMap: this.props.transitionStyleMap,
     };
