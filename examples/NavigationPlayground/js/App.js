@@ -64,6 +64,12 @@ const ExampleRoutes = {
     screen: SimpleTabs,
     path: 'settings',
   },
+  Transitions: {
+    name: 'Custom Transitions',
+    description: 'Custom, complex transitions',
+    screen: Transitions,
+    path: 'transitions',
+  },
 };
 
 const MainScreen = ({ navigation }) => (
