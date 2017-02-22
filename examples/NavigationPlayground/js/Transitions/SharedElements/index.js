@@ -7,7 +7,7 @@ import PhotoDetail from './PhotoDetail';
 
 const SharedElements = (filter) => ({
   filter,
-  shouldClone(id, routeName) { return true; },
+  shouldClone(transitionItem) { return true; },
   createAnimatedStyleMap(
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 

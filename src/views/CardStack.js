@@ -291,13 +291,32 @@ class CardStack extends Component<DefaultProps, Props, void> {
     );
   }
 
-  _hideTransitionViewUntilDone(transitionProps) {
-    const {position, scene: {index}} = transitionProps;
-    const opacity = position.interpolate({
-      inputRange: [index - 1, index - 0.01, index, index + 0.01, index + 1],
-      outputRange: [0, 0, 1, 0, 0],
-    });
+  _hideTransitionViewUntilDone(transitionProps, onFromRoute: boolean) {
+    const {progress} = transitionProps;
+    const opacity = (onFromRoute
+      ? progress.interpolate({
+          inputRange: [0, 0.01, 1],
+          outputRange: [1, 0, 0],
+        })
+      : progress.interpolate({
+          inputRange: [0, 0.99, 1],
+          outputRange: [0, 0, 1],
+        })
+    );
     return { opacity };
+  }
+
+  _hideTransitionViewIfClone(idToStyleMap, transitionProps, items, transition, onFromRoute: boolean) {
+    const itemsStyleToHide = items.reduce((result, item) => {
+      if (typeof transition.shouldClone === 'function' && transition.shouldClone(item)) {
+        result[item.id] = this._hideTransitionViewUntilDone(transitionProps, onFromRoute);
+      }
+      return result;
+    }, {});
+    return {
+      ...idToStyleMap,
+      ...itemsStyleToHide,
+    }
   }
 
   _createTransitionStyleMap(itemsOnFromRoute, itemsOnToRoute, transitionConfig, transitionProps) {
@@ -308,12 +327,11 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const filteredItemsFrom = filterItems(itemsOnFromRoute);
     const filteredItemsTo = filterItems(itemsOnToRoute);
     if (transition) {
-      return transition.createAnimatedStyleMap(filteredItemsFrom, filteredItemsTo, transitionProps);
-      // TODO shouldClone etc.
-      // return (transition.shouldClone && transition.shouldClone(id, routeName)
-      //   ? this._hideTransitionViewUntilDone(transitionProps)
-      //   : transition.createAnimatedStyle(id, routeName, transitionProps)
-      // );
+      const styleMap = transition.createAnimatedStyleMap(filteredItemsFrom, filteredItemsTo, transitionProps);
+      return {
+        from: this._hideTransitionViewIfClone(styleMap.from, transitionProps, filteredItemsFrom, transition, true),
+        to: this._hideTransitionViewIfClone(styleMap.to, transitionProps, filteredItemsTo, transition, false),
+      }
     } else {
       // TODO this default should be set somewhere else
       return {};//TransitionConfigs.defaultTransitionConfig(transitionProps).screenInterpolator(transitionProps));
@@ -332,7 +350,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const itemsOnFromRoute = this.state.transitionItems.items().filter(item => item.routeName === prevRouteName);
     const itemsOnToRoute = this.state.transitionItems.items().filter(item => item.routeName === routeName);
 
-    console.log(`===> onFrom: ${prevRouteName}`, itemsOnFromRoute.length, `==> onTo: ${routeName}`, itemsOnToRoute.length);
+    // console.log(`===> onFrom: ${prevRouteName}`, itemsOnFromRoute.length, `==> onTo: ${routeName}`, itemsOnToRoute.length);
 
     const transition = transitions[0] || this._defaultTransition(transitionProps);
     return this._createTransitionStyleMap(itemsOnFromRoute, itemsOnToRoute, transition, transitionProps);
