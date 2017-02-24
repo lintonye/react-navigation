@@ -3,6 +3,8 @@
 import React from 'react';
 import {
   View,
+  Image,
+  Text,
   UIManager,
   findNodeHandle,
   Animated,
@@ -17,20 +19,29 @@ const statefulize = Component => {
     setNativeProps(props) {
       this._component.setNativeProps(props);
     }
-    render() { 
-      return <Component {...this.props} ref={c => this._component = c}/>; 
+    render() {
+      return <Component {...this.props} ref={c => this._component = c} />;
     }
   }
   return Statefulized;
 };
 
 const createAnimatedComponent = Component => {
-  const isStatelessComponent = type => type.prototype && !!!type.prototype.render;
-  let C = Component;
-  if (isStatelessComponent(Component)) {
-    C = statefulize(Component);
+  if (Component === View) return Animated.View;
+  else if (Component === Image) return Animated.Image;
+  else if (Component === Text) return Animated.Text;
+  else {
+    // TODO: Not sure why doing below for all components such as View causes
+    //  double-rendering of PhotoDetail (and causes a whole bunch of view not 
+    // found errors when measuring views.
+    const isStatelessComponent = type => type.prototype && !!!type.prototype.render;
+    let C = Component;
+    if (isStatelessComponent(Component)) {
+      C = statefulize(Component);
+    }
+    // console.log('=====> createAnimatedComponent', Component.name || Component.displayName);
+    return Animated.createAnimatedComponent(C);
   }
-  return Animated.createAnimatedComponent(C);
 };
 
 // function findTransitionConfig(transitionConfigs: Array<*>, routeName: string, prevRouteName: string) {
