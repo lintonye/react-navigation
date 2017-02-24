@@ -25,7 +25,7 @@ export class TransitionItem {
     return new TransitionItem(this.id, this.routeName, this.reactElement, this.nativeHandle, this.metrics);
   }
   toString() {
-    return `${this.id} ${this.routeName} ${JSON.stringify(this.metrics)}`;
+    return `${this.id} ${this.routeName} handle=${this.nativeHandle} ${JSON.stringify(this.metrics)}`;
   }
 }
 
@@ -66,6 +66,7 @@ class TransitionItems {
   remove(id: string, routeName: string): TransitionItems {
     const index = this._findIndex(id, routeName);
     if (index >= 0) {
+      // if (id==='$scene-PhotoGrid') console.log('===> removing ', this._items[index].toString());
       const newItems = [...this._items.slice(0, index), ...this._items.slice(index + 1)];
       return new TransitionItems(newItems);
     } else {

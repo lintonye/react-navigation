@@ -9,6 +9,7 @@ import {
   UIManager,
 } from 'react-native';
 import invariant from 'invariant';
+import _ from 'lodash';
 
 import Transitioner from './Transitioner';
 import Card from './Card';
@@ -185,9 +186,11 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const self = this;
     return {
       registerTransitionItem(item: TransitionItem) {
+        // if (item.nativeHandle===7) console.log('==> registering', item.toString());
         self.setState((prevState: State) => ({
           transitionItems: prevState.transitionItems.add(item),
         }));
+
         // const {name, containerRouteName} = TransitionItem;
         // const matchingItem = self.state.TransitionItems.findMatchByName(name, containerRouteName);
         // // schedule to measure (on layout) if another Item with the same name is mounted
@@ -199,8 +202,10 @@ class CardStack extends Component<DefaultProps, Props, void> {
         // }
       },
       unregisterTransitionItem(id: string, routeName: string) {
+        // console.log('==> unregistering', id, routeName);
         self.setState((prevState: State) => ({
           transitionItems: prevState.transitionItems.remove(id, routeName),
+          itemsToMeasure: prevState.itemsToMeasure && prevState.itemsToMeasure.filter(i => i.id !== id || i.routeName !== routeName),
         }));
       },
     };
@@ -465,15 +470,15 @@ class CardStack extends Component<DefaultProps, Props, void> {
   }
 
   _measure(item: TransitionItem): Promise < Metrics > {
-    // console.log('measuring:', item.id, item.routeName)
     return new Promise((resolve, reject) => {
       UIManager.measureInWindow(
         item.nativeHandle,
         (x, y, width, height) => {
-          if (x && y && width && height)
+          if ([x, y, width, height].every(n => _.isNumber(n))) {
             resolve({ x, y, width, height });
-          else
-            reject(`x=${x}, y=${y}, width=${width}, height=${height}. The view (${item.nativeHandle}) is not found.  Is it collapsed on Android?`);
+          } else {
+            reject(`x=${x}, y=${y}, width=${width}, height=${height}. The view (${item.toString()}) is not found.  Is it collapsed on Android?`);
+          }
         }
       );
     });
@@ -483,16 +488,17 @@ class CardStack extends Component<DefaultProps, Props, void> {
     let toUpdate = [];
     if (this.state.itemsToMeasure) {
       for (let item of this.state.itemsToMeasure) {
-        const { name, routeName } = item;
+        const { id, routeName } = item;
         try {
           const metrics = await this._measure(item);
-          toUpdate.push({ name, routeName, metrics });
+          toUpdate.push({ id, routeName, metrics });
+          // console.log('measured:', id, routeName, metrics);
         } catch (err) {
           console.warn(err);
         }
       }
       if (toUpdate.length > 0) {
-        console.log('measured, setting meatured state:', toUpdate)
+        // console.log('measured, setting meatured state:', toUpdate)
         this.setState((prevState: State): State => ({
           transitionItems: prevState.transitionItems.updateMetrics(toUpdate),
           itemsToMeasure: [],

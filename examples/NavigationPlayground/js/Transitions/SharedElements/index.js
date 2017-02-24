@@ -21,7 +21,8 @@ const SharedElements = (filter) => ({
       const {progress} = transitionProps;
       const createSharedItemStyle = (result, id) => {
         const fromItem = itemsOnFromRoute.find(item => item.id === id);
-        const toItem = itemsOnFromRoute.find(item => item.id === id);
+        const toItem = itemsOnToRoute.find(item => item.id === id);
+        console.log('fromItem', fromItem.toString(), 'toItem', toItem.toString());
         const inputRange = [0, 1];
         const left = progress.interpolate({
           inputRange, outputRange: [fromItem.metrics.x, toItem.metrics.x]
