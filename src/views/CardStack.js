@@ -322,13 +322,13 @@ class CardStack extends Component<DefaultProps, Props, void> {
       (c.from === prevRouteName || c.from === '*') &&
       (c.to === routeName || c.to === '*')));
     invariant(transitions.length <= 1, `More than one transitions found from "${prevRouteName}" to "${routeName}".`);
-    return transitions[0];
+    return transitions[0] && transitions[0].transition;
   }
 
   _createTransitionStyleMaps(
-    props: NavigationTransitionProps,
+    transitionProps: NavigationTransitionProps,
     prevTransitionProps:NavigationTransitionProps) {
-    const routeName = props && props.scene.route.routeName;
+    const routeName = transitionProps && transitionProps.scene.route.routeName;
     const prevRouteName = prevTransitionProps && prevTransitionProps.scene.route.routeName;
 
     const transition = this._getTransition(routeName, prevRouteName);
@@ -344,13 +344,12 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const shouldClone = item => transition && typeof transition.shouldClone === 'function' && transition.shouldClone(item, prevRouteName, routeName);
 
     const filteredItems = this.state.transitionItems.items().filter(filterPass);
-    const inPlaceItems = filteredItems.filter(i => !shouldClone(i));
     const toCloneItems = filteredItems.filter(shouldClone);
 
-    const fromItemsInPlace = inPlaceItems.filter(isRoute(prevRouteName));
-    const toItemsInPlace = inPlaceItems.filter(isRoute(routeName));
-    const fromItemsClone = toCloneItems.filter(isRoute(prevRouteName));
-    const toItemsClone = toCloneItems.filter(isRoute(routeName));
+    const fromItems = filteredItems.filter(isRoute(prevRouteName));
+    const toItems = filteredItems.filter(isRoute(routeName));
+    const fromItemsClone = fromItems.filter(shouldClone);
+    const toItemsClone = toItems.filter(shouldClone);
 
     const hideUntilDone = (items, onFromRoute: boolean) => items.reduce((result, item) => {
       result[item.id] = this._hideTransitionViewUntilDone(transitionProps, onFromRoute);
@@ -359,14 +358,14 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
     // in place items
     let inPlaceStyleMap = {
-      ...transition.createAnimatedStyleMap && transition.createAnimatedStyleMap(fromItemsInPlace, toItemsInPlace, props),
+      ...transition.createAnimatedStyleMap && transition.createAnimatedStyleMap(fromItems, toItems, transitionProps),
       ...hideUntilDone(fromItemsClone, true),
       ...hideUntilDone(toItemsClone, false),
     };
     inPlaceStyleMap = this._replaceFromToInStyleMap(inPlaceStyleMap, routeName, prevRouteName);
 
     // clones
-    let cloneStyleMap = transition.createAnimatedStyleMapForClones && transition.createAnimatedStyleMapForClones(fromItemsClone, toItemsClone, props);
+    let cloneStyleMap = transition.createAnimatedStyleMapForClones && transition.createAnimatedStyleMapForClones(fromItems, toItems, transitionProps);
     cloneStyleMap = cloneStyleMap && this._replaceFromToInStyleMap(cloneStyleMap, routeName, prevRouteName);
     
     return {
