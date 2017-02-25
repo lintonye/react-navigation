@@ -341,15 +341,19 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
     const isRoute = route => item => item.routeName === route;
     const filterPass = item => transition && (!!!transition.filter || transition.filter(item.id));
-    const shouldClone = item => transition && typeof transition.shouldClone === 'function' && transition.shouldClone(item, prevRouteName, routeName);
 
     const filteredItems = this.state.transitionItems.items().filter(filterPass);
-    const toCloneItems = filteredItems.filter(shouldClone);
 
     const fromItems = filteredItems.filter(isRoute(prevRouteName));
     const toItems = filteredItems.filter(isRoute(routeName));
-    const fromItemsClone = fromItems.filter(shouldClone);
-    const toItemsClone = toItems.filter(shouldClone);
+
+    let fromItemsClone = [];
+    let toItemsClone = [];
+    if (typeof transition.getItemsToClone === 'function') {
+      const toClone = transition.getItemsToClone(fromItems, toItems);
+      fromItemsClone = (toClone && toClone.from) || [];
+      toItemsClone = (toClone && toClone.to) || [];
+    }
 
     const hideUntilDone = (items, onFromRoute: boolean) => items.reduce((result, item) => {
       result[item.id] = this._hideTransitionViewUntilDone(transitionProps, onFromRoute);
@@ -378,7 +382,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     return {
       inPlace: inPlaceStyleMap,
       clones: cloneStyleMap,
-      toCloneItems, // TODO this should be put somewhere else
+      toCloneItems: fromItemsClone.concat(toItemsClone), // TODO this should be put somewhere else
     };
   }
 
