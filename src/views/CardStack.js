@@ -357,12 +357,19 @@ class CardStack extends Component<DefaultProps, Props, void> {
     }, {}); 
 
     // in place items
+    const styleMap = transition.createAnimatedStyleMap && transition.createAnimatedStyleMap(fromItems, toItems, transitionProps);
     let inPlaceStyleMap = {
-      ...transition.createAnimatedStyleMap && transition.createAnimatedStyleMap(fromItems, toItems, transitionProps),
-      ...hideUntilDone(fromItemsClone, true),
-      ...hideUntilDone(toItemsClone, false),
+      from: {
+        ...styleMap && styleMap.from,
+        ...hideUntilDone(fromItemsClone, true),
+      },
+      to: {
+        ...styleMap && styleMap.to,
+        ...hideUntilDone(toItemsClone, false),
+      }
     };
     inPlaceStyleMap = this._replaceFromToInStyleMap(inPlaceStyleMap, routeName, prevRouteName);
+    console.log('==> inPlaceStyleMap', inPlaceStyleMap)
 
     // clones
     let cloneStyleMap = transition.createAnimatedStyleMapForClones && transition.createAnimatedStyleMapForClones(fromItems, toItems, transitionProps);
