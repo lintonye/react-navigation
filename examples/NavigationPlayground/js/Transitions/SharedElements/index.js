@@ -11,8 +11,8 @@ const {createTransition} = Transition;
 
 const SharedElements = (filter) => ({
   filter,
-  shouldClone(transitionItem) { return true; },
-  createAnimatedStyleMap(
+  shouldClone(transitionItem, fromRoute, toRoute) { return transitionItem.routeName === fromRoute; },
+  createAnimatedStyleMapForClones(
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
     transitionProps) {

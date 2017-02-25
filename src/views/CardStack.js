@@ -309,59 +309,86 @@ class CardStack extends Component<DefaultProps, Props, void> {
     return { opacity };
   }
 
-  _hideTransitionViewIfClone(idToStyleMap, transitionProps, items, transition, onFromRoute: boolean) {
-    const itemsStyleToHide = items.reduce((result, item) => {
-      if (typeof transition.shouldClone === 'function' && transition.shouldClone(item)) {
-        result[item.id] = this._hideTransitionViewUntilDone(transitionProps, onFromRoute);
-      }
-      return result;
-    }, {});
-    return {
-      ...idToStyleMap,
-      ...itemsStyleToHide,
-    }
-  }
-
-  _createTransitionStyleMap(itemsOnFromRoute, itemsOnToRoute, transitionConfig, transitionProps) {
-    const transition = transitionConfig && transitionConfig.transition;
-    const filterItems = (items:Array<*>) => {
-      return items.filter(item => transition && (!!!transition.filter || transition.filter(item.id)))
-    };
-    const filteredItemsFrom = filterItems(itemsOnFromRoute);
-    const filteredItemsTo = filterItems(itemsOnToRoute);
-    if (transition) {
-      const styleMap = transition.createAnimatedStyleMap(filteredItemsFrom, filteredItemsTo, transitionProps);
-      return {
-        from: this._hideTransitionViewIfClone(styleMap.from, transitionProps, filteredItemsFrom, transition, true),
-        to: this._hideTransitionViewIfClone(styleMap.to, transitionProps, filteredItemsTo, transition, false),
-      }
-    } else {
-      return {};
-    }
-  }
-
-  _getTransitionStyleMap(transitionProps: NavigationTransitionProps, prevRouteName: ?string) {
-    const routeName = transitionProps.scene.route.routeName;
-    const transitions = this.props.transitionConfigs.filter(c => (
-      (c.from === prevRouteName || c.from === '*') &&
-      (c.to === routeName || c.to === '*')));
-    invariant(transitions.length <= 1, `More than one transitions found from "${prevRouteName}" to "${routeName}".`);
-
-    const itemsOnFromRoute = this.state.transitionItems.items().filter(item => item.routeName === prevRouteName);
-    const itemsOnToRoute = this.state.transitionItems.items().filter(item => item.routeName === routeName);
-
-    // console.log(`===> onFrom: ${prevRouteName}`, itemsOnFromRoute.length, `==> onTo: ${routeName}`, itemsOnToRoute.length);
-
-    const transition = transitions[0];
-    return this._createTransitionStyleMap(itemsOnFromRoute, itemsOnToRoute, transition, transitionProps);
-  }
-
   _replaceFromToInStyleMap(styleMap, routeName: string, prevRouteName: ?string) {
     return {
       // ...styleMap,
       [prevRouteName || '$from']: styleMap.from, //TODO what should we do if prevRouteName === null?
       [routeName]: styleMap.to,
     }
+  }
+
+  _getTransition(routeName: string, prevRouteName: string) {
+    const transitions = this.props.transitionConfigs.filter(c => (
+      (c.from === prevRouteName || c.from === '*') &&
+      (c.to === routeName || c.to === '*')));
+    invariant(transitions.length <= 1, `More than one transitions found from "${prevRouteName}" to "${routeName}".`);
+    return transitions[0];
+  }
+
+  _createTransitionStyleMaps(
+    props: NavigationTransitionProps,
+    prevTransitionProps:NavigationTransitionProps) {
+    const routeName = props && props.scene.route.routeName;
+    const prevRouteName = prevTransitionProps && prevTransitionProps.scene.route.routeName;
+
+    const transition = this._getTransition(routeName, prevRouteName);
+    if (!transition) {
+      return {
+        inPlace: {},
+        clones: {},
+      }
+    }
+
+    const isRoute = route => item => item.routeName === route;
+    const filterPass = item => transition && (!!!transition.filter || transition.filter(item.id));
+    const shouldClone = item => transition && typeof transition.shouldClone === 'function' && transition.shouldClone(item, prevRouteName, routeName);
+
+    const filteredItems = this.state.transitionItems.items().filter(filterPass);
+    const inPlaceItems = filteredItems.filter(i => !shouldClone(i));
+    const toCloneItems = filteredItems.filter(shouldClone);
+
+    const fromItemsInPlace = inPlaceItems.filter(isRoute(prevRouteName));
+    const toItemsInPlace = inPlaceItems.filter(isRoute(routeName));
+    const fromItemsClone = toCloneItems.filter(isRoute(prevRouteName));
+    const toItemsClone = toCloneItems.filter(isRoute(routeName));
+
+    const hideUntilDone = (items, onFromRoute: boolean) => items.reduce((result, item) => {
+      result[item.id] = this._hideTransitionViewUntilDone(transitionProps, onFromRoute);
+      return result;
+    }, {}); 
+
+    // in place items
+    let inPlaceStyleMap = {
+      ...transition.createAnimatedStyleMap && transition.createAnimatedStyleMap(fromItemsInPlace, toItemsInPlace, props),
+      ...hideUntilDone(fromItemsClone, true),
+      ...hideUntilDone(toItemsClone, false),
+    };
+    inPlaceStyleMap = this._replaceFromToInStyleMap(inPlaceStyleMap, routeName, prevRouteName);
+
+    // clones
+    let cloneStyleMap = transition.createAnimatedStyleMapForClones && transition.createAnimatedStyleMapForClones(fromItemsClone, toItemsClone, props);
+    cloneStyleMap = cloneStyleMap && this._replaceFromToInStyleMap(cloneStyleMap, routeName, prevRouteName);
+    
+    return {
+      inPlace: inPlaceStyleMap,
+      clones: cloneStyleMap,
+      toCloneItems, // TODO this should be put somewhere else
+    };
+  }
+
+  _renderOverlay(toCloneItems: Array<TransitionItem>, styleMap) {
+    // TODO what if an item is the parent of another item?
+    const clones = toCloneItems.map(item => {
+      const animatedStyle = styleMap[item.routeName] && styleMap[item.routeName][item.id];
+      return React.cloneElement(item.reactElement, {
+        style: [item.reactElement.props.style, styles.clonedItem, animatedStyle],
+      }, []);
+    });
+    return (
+      <View style={styles.overlay} pointerEvents="none">
+        { clones }
+      </View>
+    );
   }
 
   _render(
@@ -372,11 +399,10 @@ class CardStack extends Component<DefaultProps, Props, void> {
     if (headerMode === 'float') {
       floatingHeader = this._renderHeader(props, headerMode);
     }
-    const routeName = props && props.scene.route.routeName;
-    const prevRouteName = prevTransitionProps && prevTransitionProps.scene.route.routeName;
-    const transitionStyleMap = this._getTransitionStyleMap(props, prevRouteName);
-    const populatedStyleMap = this._replaceFromToInStyleMap(transitionStyleMap, routeName, prevRouteName);
-    // console.log('========> styleMap', populatedStyleMap);
+
+    const styleMaps = this._createTransitionStyleMaps(props, prevTransitionProps);
+
+    const overlay = styleMaps.toCloneItems && this._renderOverlay(styleMaps.toCloneItems, styleMaps.clones);
     return (
       <View style={styles.container}>
         <View
@@ -387,10 +413,12 @@ class CardStack extends Component<DefaultProps, Props, void> {
               ...props,
               scene,
               navigation: this._getChildNavigation(scene),
-            }, populatedStyleMap)
-          )}
+            }, styleMaps.inPlace)
+          )
+          }
         </View>
         {floatingHeader}
+        {overlay}
       </View>
     );
   }
@@ -568,6 +596,17 @@ const styles = StyleSheet.create({
   scenes: {
     flex: 1,
   },
+  overlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    elevation: 100, // make sure it's on the top on Android. TODO is this a legit way?
+  },
+  clonedItem: {
+    position: 'absolute',
+  }
 });
 
 export default CardStack;
