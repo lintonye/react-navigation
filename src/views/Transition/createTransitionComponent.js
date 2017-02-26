@@ -31,7 +31,9 @@ const createAnimatedComponent = Component => {
   else if (Component === Image) return Animated.Image;
   else if (Component === Text) return Animated.Text;
   else {
-    // TODO: Not sure why doing below for all components such as View causes
+    // TODO: Perhaps need to cache the animated components created here by Component somewhere.
+    // otherwise, React will think it's a different type and refresh the component at every update.
+    // This might be the reason why doing below for all components such as View causes
     //  double-rendering of PhotoDetail (and causes a whole bunch of view not 
     // found errors when measuring views.
     const isStatelessComponent = type => type.prototype && !!!type.prototype.render;
