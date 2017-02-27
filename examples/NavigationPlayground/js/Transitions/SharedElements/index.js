@@ -16,11 +16,8 @@ const SharedElements = (filter) => ({
     itemsOnToRoute: Array<*> ) {
     const itemIdsOnBoth = _.intersectionWith(itemsOnFromRoute, itemsOnToRoute, (i1, i2) => i1.id === i2.id)
       .map(item => item.id);
-    const onBoth = item => itemIdsOnBoth.includes(item.id)
-    return {
-      from: itemsOnFromRoute.filter(onBoth),
-      to: itemsOnToRoute.filter(onBoth),
-    }
+    const onBoth = item => itemIdsOnBoth.includes(item.id);
+    return itemsOnFromRoute.filter(onBoth);
   },
   createAnimatedStyleMapForClones(
     itemsOnFromRoute: Array<*>, 
