@@ -173,8 +173,13 @@ class CardStack extends Component<DefaultProps, Props, void> {
   }
 
   componentWillReceiveProps(nextProps) {
-    const getRoute = props => props.navigation && props.navigation.state.routes[props.navigation.state.index].routeName;
-    console.log('routeName', getRoute(this.props), 'nextRoute', getRoute(nextProps))
+    // const getRoute = props => props.navigation && props.navigation.state.routes[props.navigation.state.index].routeName;
+    // console.log('routeName', getRoute(this.props), 'nextRoute', getRoute(nextProps))
+    
+    // When coming back from scene, onLayout won't be triggered, we'll need to do it manually.
+    if (this.props.navigation.state.index > nextProps.navigation.state.index) {
+      this._onLayout();
+    }
   }
 
   getChildContext() {
