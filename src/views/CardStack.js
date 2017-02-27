@@ -173,7 +173,6 @@ class CardStack extends Component<DefaultProps, Props, void> {
   }
 
   componentWillReceiveProps(nextProps) {
-    // const getRoute = props => props.navigation && props.navigation.state.routes[props.navigation.state.index].routeName;
     // console.log('routeName', getRoute(this.props), 'nextRoute', getRoute(nextProps))
 
     // When coming back from scene, onLayout won't be triggered, we'll need to do it manually.
@@ -316,6 +315,17 @@ class CardStack extends Component<DefaultProps, Props, void> {
     return transitions[0] && transitions[0].transition;
   }
 
+  _getFilteredFromToItems(transition, fromRouteName: string, toRouteName: string) {
+    const isRoute = route => item => item.routeName === route;
+    const filterPass = item => transition && (!!!transition.filter || transition.filter(item.id));
+
+    const filteredItems = this.state.transitionItems.items().filter(filterPass);
+
+    const fromItems = filteredItems.filter(isRoute(fromRouteName));
+    const toItems = filteredItems.filter(isRoute(toRouteName));
+    return { from: fromItems, to: toItems };
+  }
+
   _createTransitionStyleMaps(
     transitionProps: NavigationTransitionProps,
     prevTransitionProps:NavigationTransitionProps) {
@@ -330,14 +340,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
       }
     }
 
-    const isRoute = route => item => item.routeName === route;
-    const filterPass = item => transition && (!!!transition.filter || transition.filter(item.id));
-
-    const filteredItems = this.state.transitionItems.items().filter(filterPass);
-
-    const fromItems = filteredItems.filter(isRoute(prevRouteName));
-    const toItems = filteredItems.filter(isRoute(routeName));
-
+    const { from: fromItems, to: toItems } = this._getFilteredFromToItems(transition, prevRouteName, routeName);
     const itemsToClone = transition.getItemsToClone && transition.getItemsToClone(fromItems, toItems);
 
     const hideUntilDone = (items, onFromRoute: boolean) => items.reduce((result, item) => {
@@ -350,7 +353,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     let inPlaceStyleMap = {
       from: {
         ...styleMap && styleMap.from,
-        ...hideUntilDone(itemsToClone, true),
+        ...hideUntilDone(itemsToClone, true), //TODO should we separate itemsToClone into from and to?
       },
       to: {
         ...styleMap && styleMap.to,

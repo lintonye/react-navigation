@@ -19,6 +19,14 @@ const SharedElements = (filter) => ({
     const onBoth = item => itemIdsOnBoth.includes(item.id);
     return itemsOnFromRoute.filter(onBoth);
   },
+  getItemsToMeasure(
+    itemsOnFromRoute: Array<*>, 
+    itemsOnToRoute: Array<*> ) {
+    const itemIdsOnBoth = _.intersectionWith(itemsOnFromRoute, itemsOnToRoute, (i1, i2) => i1.id === i2.id)
+      .map(item => item.id);
+    const onBoth = item => itemIdsOnBoth.includes(item.id);
+    return itemsOnFromRoute.filter(onBoth).concat(itemsOnToRoute.filter(onBoth));
+  },
   createAnimatedStyleMapForClones(
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
