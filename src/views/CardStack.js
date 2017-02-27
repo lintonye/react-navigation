@@ -69,7 +69,7 @@ type DefaultProps = {
 
 type State = {
   transitionItems: TransitionItems,
-  itemsToMeasure: Array<TransitionItem>,
+  toMeasureOnNextLayout: boolean,
 };
 
 class CardStack extends Component<DefaultProps, Props, void> {
@@ -161,7 +161,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     super(props, context);
     this.state = {
       transitionItems: new TransitionItems(),
-      itemsToMeasure: null,
+      toMeasureOnNextLayout: false,
     }
   }
 
@@ -169,16 +169,22 @@ class CardStack extends Component<DefaultProps, Props, void> {
     if (this.props !== nextProps) {
       return true;
     } else {
-      return nextState.itemsToMeasure && nextState.itemsToMeasure.length === 0;
+      // return nextState.itemsToMeasure && nextState.itemsToMeasure.length === 0;
+      return !!!nextState.toMeasureOnNextLayout;
     }
   }
 
   componentWillReceiveProps(nextProps) {
+    const getRoute = props => props.navigation && props.navigation.state.routes[props.navigation.state.index].routeName;
+    console.log('routeName', getRoute(this.props), 'nextRoute', getRoute(nextProps))
     if (nextProps.navigation !== this.props.navigation) {
-      this.setState({
-        ...this.state,
-        itemsToMeasure: [...this.state.transitionItems.items()],
-      });
+      // this.setState(prevState => ({
+      //   ...prevState,
+      //   itemsToMeasure: [...prevState.transitionItems.items()],
+      // }));
+      this.setState({ toMeasureOnNextLayout: true });
+      // this._measureTransitionItems(this.state.transitionItems.items())
+      //   .then(() => this.setState({ toMeasureOnNextLayout: false}));
     }
   }
 
@@ -250,7 +256,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
        && CardStackStyleInterpolator.canUseNativeDriver(isModal)
     ) {
       // Internal undocumented prop
-      transitionSpec.useNativeDriver = true;
+      transitionSpec.useNativeDriver = false; //TODO make this user configurable
     }
     return transitionSpec;
   }
@@ -523,9 +529,12 @@ class CardStack extends Component<DefaultProps, Props, void> {
   }
 
   async _onLayout() {
+    if (!!!this.state.toMeasureOnNextLayout) return;
+
+    const items = this.state.transitionItems.items();
     let toUpdate = [];
-    if (this.state.itemsToMeasure) {
-      for (let item of this.state.itemsToMeasure) {
+    if (items) {
+      for (let item of items) {
         const { id, routeName } = item;
         try {
           const metrics = await this._measure(item);
@@ -539,7 +548,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
         // console.log('measured, setting meatured state:', toUpdate)
         this.setState((prevState: State): State => ({
           transitionItems: prevState.transitionItems.updateMetrics(toUpdate),
-          itemsToMeasure: [],
+          toMeasureOnNextLayout: false,
         }));
       }
     }
