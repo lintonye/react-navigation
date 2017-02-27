@@ -177,11 +177,34 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
     // When coming back from scene, onLayout won't be triggered, we'll need to do it manually.
     if (this.props.navigation !== nextProps.navigation) {
+      const getRoute = props => props.navigation && props.navigation.state.routes[props.navigation.state.index];
+      const fromRoute = getRoute(this.props);
+      const toRoute = getRoute(nextProps);
+      const transition = this._getTransition(toRoute.routeName, fromRoute.routeName);
+      let itemsToMeasure = [];
+      if (transition && transition.getItemsToMeasure) {
+        const { from, to } = this._getFilteredFromToItems(transition, fromRoute.routeName, toRoute.routeName);
+        itemsToMeasure = transition.getItemsToMeasure(from, to);
+        // console.log('itemsToMeasure:', itemsToMeasure.length, from.length, to.length, this.state.transitionItems.count())
+      }
       this.setState(prevState => ({
-        transitionItems: prevState.transitionItems.removeAllMetrics(),
+        transitionItems: prevState.transitionItems.removeAllMetrics().setShouldMeasure(itemsToMeasure),
       }), () => this._onLayout());
     }
   }
+
+  // componentDidUpdate(prevProps, prevState) {
+  //   const getRoute = props => props.navigation && props.navigation.state.routes[props.navigation.state.index];
+  //   const fromRoute = getRoute(prevProps);
+  //   const toRoute = getRoute(this.props);
+  //   const transition = this._getTransition(toRoute.routeName, fromRoute.routeName);
+  //   let itemsToMeasure = [];
+  //   if (transition && transition.getItemsToMeasure) {
+  //     const { from, to } = this._getFilteredFromToItems(transition, fromRoute, toRoute);
+  //     itemsToMeasure = transition.getItemsToMeasure(from, to);
+  //     console.log('itemsToMeasure:', itemsToMeasure.length, from.length, to.length, this.state.transitionItems.count())
+  //   }
+  // }
 
   getChildContext() {
     const self = this;
@@ -512,7 +535,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
   async _onLayout() {
     const then = new Date();
-    const items = this.state.transitionItems.items().filter(i => !i.isMeasured());
+    const items = this.state.transitionItems.items().filter(i => i.shouldMeasure && !i.isMeasured());
     let toUpdate = [];
     for (let item of items) {
       const { id, routeName } = item;

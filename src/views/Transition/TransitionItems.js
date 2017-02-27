@@ -14,18 +14,20 @@ export class TransitionItem {
   reactElement: React.Element<*>;
   nativeHandle: any;
   metrics: ?Metrics;
-  constructor(id: string, routeName: string, reactElement: React.Element<*>, nativeHandle: any, metrics:?Metrics) {
+  shouldMeasure: boolean;
+  constructor(id: string, routeName: string, reactElement: React.Element<*>, nativeHandle: any, metrics:?Metrics, shouldMeasure: boolean = false) {
     this.id = id;
     this.routeName = routeName;
     this.reactElement = reactElement;
     this.nativeHandle = nativeHandle;
     this.metrics = metrics;
+    this.shouldMeasure = shouldMeasure;
   }
   clone() {
-    return new TransitionItem(this.id, this.routeName, this.reactElement, this.nativeHandle, this.metrics);
+    return new TransitionItem(this.id, this.routeName, this.reactElement, this.nativeHandle, this.metrics, this.shouldMeasure);
   }
   toString() {
-    return `${this.id} ${this.routeName} handle=${this.nativeHandle} ${JSON.stringify(this.metrics)}`;
+    return `${this.id} ${this.routeName} handle=${this.nativeHandle} ${JSON.stringify(this.metrics)} shouldMeasure=${this.shouldMeasure}`;
   }
   isMeasured() {
     const isNumber = n => typeof n === 'number';
@@ -110,7 +112,20 @@ class TransitionItems {
   }
 
   areAllMeasured() {
-    return this._items.every(i => i.isMeasured());
+    return this._items.filter(i => i.shouldMeasure).every(i => i.isMeasured());
+  }
+
+  setShouldMeasure(itemsToMeasure: Array<TransitionItem>) {
+    if (itemsToMeasure && itemsToMeasure.length > 0) {
+      const newItems = this._items.map(item => {
+        const newItem = item.clone();
+        newItem.shouldMeasure = !!itemsToMeasure.find(i => i.id === item.id && i.routeName === item.routeName);
+        return newItem;
+      });
+      return new TransitionItems(newItems);
+    } else {
+      return this;
+    }
   }
 }
 
