@@ -330,7 +330,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     return { from: fromItems, to: toItems };
   }
 
-  _createTransitionStyleMaps(
+  _createInPlaceTransitionStyleMap(
     transitionProps: NavigationTransitionProps,
     prevTransitionProps:NavigationTransitionProps) {
     const routeName = transitionProps && transitionProps.scene.route.routeName;
@@ -338,10 +338,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
     const transition = this._getTransition(routeName, prevRouteName);
     if (!transition || !this.state.transitionItems.areAllMeasured()) {
-      return {
-        inPlace: {},
-        clones: {},
-      }
+      return null;
     }
 
     const { from: fromItems, to: toItems } = this._getFilteredFromToItems(transition, prevRouteName, routeName);
@@ -352,7 +349,6 @@ class CardStack extends Component<DefaultProps, Props, void> {
       return result;
     }, {}); 
 
-    // in place items
     const styleMap = transition.createAnimatedStyleMap && transition.createAnimatedStyleMap(fromItems, toItems, transitionProps);
     let inPlaceStyleMap = {
       from: {
@@ -366,31 +362,36 @@ class CardStack extends Component<DefaultProps, Props, void> {
     };
     inPlaceStyleMap = this._replaceFromToInStyleMap(inPlaceStyleMap, routeName, prevRouteName);
     console.log('==> inPlaceStyleMap', inPlaceStyleMap)
-
-    // clones
-    let cloneStyleMap = transition.createAnimatedStyleMapForClones && transition.createAnimatedStyleMapForClones(fromItems, toItems, transitionProps);
-    cloneStyleMap = cloneStyleMap && this._replaceFromToInStyleMap(cloneStyleMap, routeName, prevRouteName);
     
-    return {
-      inPlace: inPlaceStyleMap,
-      clones: cloneStyleMap,
-      itemsToClone, // TODO this should be put somewhere else
-    };
+    return inPlaceStyleMap;
   }
 
-  _renderOverlay(itemsToClone: Array<TransitionItem>, styleMap) {
-    // TODO what if an item is the parent of another item?
-    const clones = itemsToClone.map(item => {
-      const animatedStyle = styleMap[item.routeName] && styleMap[item.routeName][item.id];
-      return React.cloneElement(item.reactElement, {
-        style: [item.reactElement.props.style, styles.clonedItem, animatedStyle],
-      }, []);
-    });
-    return (
-      <View style={styles.overlay} pointerEvents="none">
-        { clones }
-      </View>
-    );
+  _renderOverlay(transitionProps) {
+    const fromRouteName = this._fromRoute && this._fromRoute.routeName;
+    const toRouteName = this._toRoute && this._toRoute.routeName;
+    const transition = this._getTransition(toRouteName, fromRouteName);
+    if (transition) {
+      const { from: fromItems, to: toItems } = this._getFilteredFromToItems(transition, fromRouteName, toRouteName);
+      const itemsToClone = transition.getItemsToClone && transition.getItemsToClone(fromItems, toItems);
+
+      let styleMap = transition.createAnimatedStyleMapForClones && transition.createAnimatedStyleMapForClones(fromItems, toItems, transitionProps);
+      styleMap = styleMap && this._replaceFromToInStyleMap(styleMap, toRouteName, fromRouteName);
+
+      // TODO what if an item is the parent of another item?
+      const clones = itemsToClone.map(item => {
+        const animatedStyle = styleMap && styleMap[item.routeName] && styleMap[item.routeName][item.id];
+        return React.cloneElement(item.reactElement, {
+          style: [item.reactElement.props.style, styles.clonedItem, animatedStyle],
+        }, []);
+      });
+      return (
+        <View style={styles.overlay} pointerEvents="none">
+          {clones}
+        </View>
+      );
+    } else {
+      return null;
+    }
   }
 
   _render(
@@ -402,9 +403,9 @@ class CardStack extends Component<DefaultProps, Props, void> {
       floatingHeader = this._renderHeader(props, headerMode);
     }
 
-    const styleMaps = this._createTransitionStyleMaps(props, prevTransitionProps);
+    const styleMap = this._createInPlaceTransitionStyleMap(props, prevTransitionProps);
 
-    const overlay = styleMaps.itemsToClone && this._renderOverlay(styleMaps.itemsToClone, styleMaps.clones);
+    const overlay = this._renderOverlay(props);
     return (
       <View style={styles.container}>
         <View
@@ -415,7 +416,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
               ...props,
               scene,
               navigation: this._getChildNavigation(scene),
-            }, styleMaps.inPlace)
+            }, styleMap)
           )
           }
         </View>

@@ -93,7 +93,7 @@ function createTransitionComponent(Component) {
       // }
       const {id} = this.props;
       const {routeName, transitionStyleMap} = this.context;
-      return transitionStyleMap[routeName] && transitionStyleMap[routeName][id];
+      return transitionStyleMap && transitionStyleMap[routeName] && transitionStyleMap[routeName][id];
     }
 
     render() {
