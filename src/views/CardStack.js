@@ -69,7 +69,6 @@ type DefaultProps = {
 
 type State = {
   transitionItems: TransitionItems,
-  toMeasureOnNextLayout: boolean,
 };
 
 class CardStack extends Component<DefaultProps, Props, void> {
@@ -175,36 +174,18 @@ class CardStack extends Component<DefaultProps, Props, void> {
   componentWillReceiveProps(nextProps) {
     // console.log('routeName', getRoute(this.props), 'nextRoute', getRoute(nextProps))
 
-    // When coming back from scene, onLayout won't be triggered, we'll need to do it manually.
     if (this.props.navigation !== nextProps.navigation) {
       const getRoute = props => props.navigation && props.navigation.state.routes[props.navigation.state.index];
       const fromRoute = getRoute(this.props);
       const toRoute = getRoute(nextProps);
-      const transition = this._getTransition(toRoute.routeName, fromRoute.routeName);
-      let itemsToMeasure = [];
-      if (transition && transition.getItemsToMeasure) {
-        const { from, to } = this._getFilteredFromToItems(transition, fromRoute.routeName, toRoute.routeName);
-        itemsToMeasure = transition.getItemsToMeasure(from, to);
-        // console.log('itemsToMeasure:', itemsToMeasure.length, from.length, to.length, this.state.transitionItems.count())
-      }
+      this._fromRoute = fromRoute;
+      this._toRoute = toRoute;
+      // When coming back from scene, onLayout won't be triggered, we'll need to do it manually.
       this.setState(prevState => ({
-        transitionItems: prevState.transitionItems.removeAllMetrics().setShouldMeasure(itemsToMeasure),
+        transitionItems: prevState.transitionItems.removeAllMetrics(),
       }), () => this._onLayout());
     }
   }
-
-  // componentDidUpdate(prevProps, prevState) {
-  //   const getRoute = props => props.navigation && props.navigation.state.routes[props.navigation.state.index];
-  //   const fromRoute = getRoute(prevProps);
-  //   const toRoute = getRoute(this.props);
-  //   const transition = this._getTransition(toRoute.routeName, fromRoute.routeName);
-  //   let itemsToMeasure = [];
-  //   if (transition && transition.getItemsToMeasure) {
-  //     const { from, to } = this._getFilteredFromToItems(transition, fromRoute, toRoute);
-  //     itemsToMeasure = transition.getItemsToMeasure(from, to);
-  //     console.log('itemsToMeasure:', itemsToMeasure.length, from.length, to.length, this.state.transitionItems.count())
-  //   }
-  // }
 
   getChildContext() {
     const self = this;
@@ -533,7 +514,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     });
   }
 
-  async _onLayout() {
+  async _measureItems() {
     const then = new Date();
     const items = this.state.transitionItems.items().filter(i => i.shouldMeasure && !i.isMeasured());
     let toUpdate = [];
@@ -550,11 +531,28 @@ class CardStack extends Component<DefaultProps, Props, void> {
     if (toUpdate.length > 0) {
       // console.log('measured, setting meatured state:', toUpdate)
       this.setState((prevState: State): State => ({
+        ...prevState,
         transitionItems: prevState.transitionItems.updateMetrics(toUpdate),
-        toMeasureOnNextLayout: false,
       }));
     }
-    console.log(`====> onLayout took ${new Date() - then} ms`);
+    console.log(`====> _measureItems took ${new Date() - then} ms`);
+  }
+
+  async _onLayout() {
+    const fromRoute = this._fromRoute;
+    const toRoute = this._toRoute;
+    if (fromRoute && toRoute) {
+      const transition = this._getTransition(toRoute.routeName, fromRoute.routeName);
+      let itemsToMeasure = [];
+      if (transition && transition.getItemsToMeasure) {
+        const { from, to } = this._getFilteredFromToItems(transition, fromRoute.routeName, toRoute.routeName);
+        itemsToMeasure = transition.getItemsToMeasure(from, to);
+      }
+      this.setState(prevState => ({
+        ...prevState,
+        transitionItems: prevState.transitionItems.setShouldMeasure(itemsToMeasure),
+      }), () => this._measureItems());
+    }
   }
 
   _renderScene(props: NavigationSceneRendererProps, transitionStyleMap): React.Element<*> {
