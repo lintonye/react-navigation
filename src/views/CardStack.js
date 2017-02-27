@@ -175,10 +175,12 @@ class CardStack extends Component<DefaultProps, Props, void> {
   componentWillReceiveProps(nextProps) {
     // const getRoute = props => props.navigation && props.navigation.state.routes[props.navigation.state.index].routeName;
     // console.log('routeName', getRoute(this.props), 'nextRoute', getRoute(nextProps))
-    
+
     // When coming back from scene, onLayout won't be triggered, we'll need to do it manually.
-    if (this.props.navigation.state.index > nextProps.navigation.state.index) {
-      this._onLayout();
+    if (this.props.navigation !== nextProps.navigation) {
+      this.setState(prevState => ({
+        transitionItems: prevState.transitionItems.removeAllMetrics(),
+      }), () => this._onLayout());
     }
   }
 
@@ -213,18 +215,9 @@ class CardStack extends Component<DefaultProps, Props, void> {
         render={this._render}
         style={this.props.style}
         onTransitionStart={this.props.onTransitionStart}
-        onTransitionEnd={this._onTransitionEnd.bind(this)}
+        onTransitionEnd={this.props.onTransitionEnd}
       />
     );
-  }
-
-  _onTransitionEnd() {
-    this.props.onTransitionEnd && this.props.onTransitionEnd();
-    // Remove all previous metrics to force a fresh measuring on
-    // the next transition.
-    this.setState(prevState => ({
-      transitionItems: prevState.transitionItems.removeAllMetrics(),
-    }));
   }
 
   _configureTransition = (
@@ -521,29 +514,27 @@ class CardStack extends Component<DefaultProps, Props, void> {
   }
 
   async _onLayout() {
-    if (this.state.transitionItems.areAllMeasured()) return;
-
-    const items = this.state.transitionItems.items();
+    const then = new Date();
+    const items = this.state.transitionItems.items().filter(i => !i.isMeasured());
     let toUpdate = [];
-    if (items) {
-      for (let item of items) {
-        const { id, routeName } = item;
-        try {
-          const metrics = await this._measure(item);
-          toUpdate.push({ id, routeName, metrics });
-          // console.log('measured:', id, routeName, metrics);
-        } catch (err) {
-          console.warn(err);
-        }
-      }
-      if (toUpdate.length > 0) {
-        // console.log('measured, setting meatured state:', toUpdate)
-        this.setState((prevState: State): State => ({
-          transitionItems: prevState.transitionItems.updateMetrics(toUpdate),
-          toMeasureOnNextLayout: false,
-        }));
+    for (let item of items) {
+      const { id, routeName } = item;
+      try {
+        const metrics = await this._measure(item);
+        toUpdate.push({ id, routeName, metrics });
+        // console.log('measured:', id, routeName, metrics);
+      } catch (err) {
+        console.warn(err);
       }
     }
+    if (toUpdate.length > 0) {
+      // console.log('measured, setting meatured state:', toUpdate)
+      this.setState((prevState: State): State => ({
+        transitionItems: prevState.transitionItems.updateMetrics(toUpdate),
+        toMeasureOnNextLayout: false,
+      }));
+    }
+    console.log(`====> onLayout took ${new Date() - then} ms`);
   }
 
   _renderScene(props: NavigationSceneRendererProps, transitionStyleMap): React.Element<*> {

@@ -27,6 +27,11 @@ export class TransitionItem {
   toString() {
     return `${this.id} ${this.routeName} handle=${this.nativeHandle} ${JSON.stringify(this.metrics)}`;
   }
+  isMeasured() {
+    const isNumber = n => typeof n === 'number';
+    const metricsValid = (m: Metrics) => m && [m.x, m.y, m.width, m.height].every(isNumber);
+    return metricsValid(this.metrics);
+  }
 }
 
 type ItemPair = {
@@ -103,11 +108,9 @@ class TransitionItems {
       return new TransitionItems(newItems);
     } else return this;
   }
-  
+
   areAllMeasured() {
-    const isNumber = n => typeof n === 'number';
-    const metricsValid = (m: Metrics) => m && [m.x, m.y, m.width, m.height].every(isNumber);
-    return this._items.every(i => metricsValid(i.metrics));
+    return this._items.every(i => i.isMeasured());
   }
 }
 
