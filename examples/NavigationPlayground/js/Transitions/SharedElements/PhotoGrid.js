@@ -37,7 +37,7 @@ const photos = Array(50).fill(0).map(_ => ({
   url: faker.image.animals(500, 500, true),
   image: images[faker.random.number(images.length - 1)],
   title: faker.name.findName(),
-  description: faker.lorem.paragraphs(4),
+  description: faker.lorem.paragraphs(10),
 }));
 
 const colCount = 3;
