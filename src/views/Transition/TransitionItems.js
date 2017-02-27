@@ -103,37 +103,11 @@ class TransitionItems {
       return new TransitionItems(newItems);
     } else return this;
   }
-  _getIdPairMap(fromRoute: string, toRoute: string) {
-    //TODO cache the map. Since the object is immutable, no need to worry about updates to _items
-    const idMap = this._items.reduce((map, item) => {
-      let pairByName = map.get(item.id);
-      if (!pairByName) {
-        pairByName = {};
-        map.set(item.id, pairByName);
-      }
-      if (item.routeName === fromRoute) pairByName.fromItem = item;
-      if (item.routeName === toRoute) pairByName.toItem = item;
-      // delete empty pairs
-      if (!pairByName.fromItem && !pairByName.toItem) map.delete(item.id);
-      return map;
-    }, new Map());
-    return idMap;
-  }
-  isMeatured(p: ItemPair) {
+  
+  areAllMeasured() {
     const isNumber = n => typeof n === 'number';
     const metricsValid = (m: Metrics) => m && [m.x, m.y, m.width, m.height].every(isNumber);
-    const { fromItem, toItem } = p;
-    return fromItem && toItem
-      && metricsValid(fromItem.metrics) && metricsValid(toItem.metrics);
-  }
-  getMeasuredItemPairs(fromRoute: string, toRoute: string): Array<ItemPair> {
-    const idMap = this._getIdPairMap(fromRoute, toRoute);
-    // console.log('getMeasuredItemPairs.idMap', Array.from(idMap.values()).map(p => `fromItem:${p.fromItem ? p.fromItem.toString() : 'null'} toItem:${p.toItem ? p.toItem.toString() : 'null'}`));
-    return Array.from(idMap.values())
-      .filter(this.isMeatured);
-  }
-  findMatchByName(id: string, routeToExclude: string): ?TransitionItem {
-    return this._items.find(i => i.id === id && i.routeName !== routeToExclude);
+    return this._items.every(i => metricsValid(i.metrics));
   }
 }
 
