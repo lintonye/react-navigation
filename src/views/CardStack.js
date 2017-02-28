@@ -211,6 +211,13 @@ class CardStack extends Component<DefaultProps, Props, void> {
     this._renderScene = this._renderScene.bind(this);
   }
 
+  // Just for testing //TODO delete when done with performance fixing
+  componentDidUpdate(prevProps, prevState) {
+    this.updateCount = this.updateCount || 0;
+    this.updateCount++;
+    console.log(`====================================> ${this.updateCount} cardStack updated propsChanged=${this.props !== prevProps}, stateChanged=${this.state !== prevState}`);
+  }
+
   render() {
     return (
       <Transitioner
