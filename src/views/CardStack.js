@@ -305,8 +305,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
   _replaceFromToInStyleMap(styleMap, fromRouteName: string, toRouteName: string) {
     return {
-      // ...styleMap,
-      [fromRouteName || '$from']: styleMap.from, //TODO what should we do if fromRouteName === null?
+      [fromRouteName]: styleMap.from,
       [toRouteName]: styleMap.to,
     }
   }
