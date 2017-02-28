@@ -5,7 +5,9 @@ export function together(...transitions) {
   const getItemsOp = (op: string) => (
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>) => transitions.reduce((result, t) => {
-      const opResult = t[op] && t[op](itemsOnFromRoute, itemsOnToRoute);
+      const fromItems = itemsOnFromRoute.filter(i => t.filter(i.id));
+      const toItems = itemsOnToRoute.filter(i => t.filter(i.id));
+      const opResult = t[op] && t[op](fromItems, toItems);
       if (opResult) result = _.union(result, opResult);
       return result;
     }, []);
@@ -21,7 +23,9 @@ export function together(...transitions) {
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
     transitionProps) => transitions.reduce((result, t) => {
-      const opResult = t[op] && t[op](itemsOnFromRoute, itemsOnToRoute, transitionProps);
+      const fromItems = itemsOnFromRoute.filter(i => t.filter(i.id));
+      const toItems = itemsOnToRoute.filter(i => t.filter(i.id));
+      const opResult = t[op] && t[op](fromItems, toItems, transitionProps);
       if (opResult) result = mergeStyleMap(result, opResult);
       return result;
   }, {});
