@@ -182,9 +182,8 @@ class CardStack extends Component<DefaultProps, Props, void> {
       this._fromRoute = fromRoute;
       this._toRoute = toRoute;
       // When coming back from scene, onLayout won't be triggered, we'll need to do it manually.
-      this.setState(prevState => ({
-        transitionItems: prevState.transitionItems.removeAllMetrics(),
-      }), () => this._onLayout());
+      this._setTransitionItemsState(prevItems => prevItems.removeAllMetrics(), 
+        () => this._onLayout());
     }
   }
 
@@ -193,15 +192,11 @@ class CardStack extends Component<DefaultProps, Props, void> {
     return {
       registerTransitionItem(item: TransitionItem) {
         // if (item.nativeHandle===7) console.log('==> registering', item.toString());
-        self.setState((prevState: State) => ({
-          transitionItems: prevState.transitionItems.add(item),
-        }));
+        self._setTransitionItemsState(prevItems => prevItems.add(item));
       },
       unregisterTransitionItem(id: string, routeName: string) {
         // console.log('==> unregistering', id, routeName);
-        self.setState((prevState: State) => ({
-          transitionItems: prevState.transitionItems.remove(id, routeName),
-        }));
+        self._setTransitionItemsState(prevItems => prevItems.remove(id, routeName));
       },
     };
   }
@@ -529,6 +524,16 @@ class CardStack extends Component<DefaultProps, Props, void> {
     });
   }
 
+  _setTransitionItemsState(fun, callback) {
+    this.setState(prevState => {
+      const newItems = fun(prevState.transitionItems);
+      return (newItems !== prevState.transitionItems 
+        ? {...prevState, transitionItems: newItems}
+        : prevState
+      );
+    }, callback);
+  }
+
   async _measureItems() {
     const then = new Date();
     const items = this.state.transitionItems.items().filter(i => i.shouldMeasure && !i.isMeasured());
@@ -545,10 +550,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     }
     if (toUpdate.length > 0) {
       // console.log('measured, setting meatured state:', toUpdate)
-      this.setState((prevState: State): State => ({
-        ...prevState,
-        transitionItems: prevState.transitionItems.updateMetrics(toUpdate),
-      }));
+      this._setTransitionItemsState(prevItems => prevItems.updateMetrics(toUpdate));
     }
     console.log(`====> _measureItems took ${new Date() - then} ms`);
   }
@@ -563,10 +565,8 @@ class CardStack extends Component<DefaultProps, Props, void> {
         const { from, to } = this._getFilteredFromToItems(transition, fromRoute.routeName, toRoute.routeName);
         itemsToMeasure = transition.getItemsToMeasure(from, to);
       }
-      this.setState(prevState => ({
-        ...prevState,
-        transitionItems: prevState.transitionItems.setShouldMeasure(itemsToMeasure),
-      }), () => this._measureItems());
+      this._setTransitionItemsState(prevItems => prevItems.setShouldMeasure(itemsToMeasure), 
+        () => this._measureItems());
     }
   }
 
