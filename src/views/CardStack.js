@@ -303,19 +303,19 @@ class CardStack extends Component<DefaultProps, Props, void> {
     return { opacity };
   }
 
-  _replaceFromToInStyleMap(styleMap, routeName: string, prevRouteName: ?string) {
+  _replaceFromToInStyleMap(styleMap, fromRouteName: string, toRouteName: string) {
     return {
       // ...styleMap,
-      [prevRouteName || '$from']: styleMap.from, //TODO what should we do if prevRouteName === null?
-      [routeName]: styleMap.to,
+      [fromRouteName || '$from']: styleMap.from, //TODO what should we do if fromRouteName === null?
+      [toRouteName]: styleMap.to,
     }
   }
 
-  _getTransition(routeName: string, prevRouteName: string) {
+  _getTransition(fromRouteName: string, toRouteName: string) {
     const transitions = this.props.transitionConfigs.filter(c => (
-      (c.from === prevRouteName || c.from === '*') &&
-      (c.to === routeName || c.to === '*')));
-    invariant(transitions.length <= 1, `More than one transitions found from "${prevRouteName}" to "${routeName}".`);
+      (c.from === fromRouteName || c.from === '*') &&
+      (c.to === toRouteName || c.to === '*')));
+    invariant(transitions.length <= 1, `More than one transitions found from "${fromRouteName}" to "${toRouteName}".`);
     return transitions[0] && transitions[0].transition;
   }
 
@@ -333,15 +333,15 @@ class CardStack extends Component<DefaultProps, Props, void> {
   _createInPlaceTransitionStyleMap(
     transitionProps: NavigationTransitionProps,
     prevTransitionProps:NavigationTransitionProps) {
-    const routeName = transitionProps && transitionProps.scene.route.routeName;
-    const prevRouteName = prevTransitionProps && prevTransitionProps.scene.route.routeName;
+    const fromRouteName = this._fromRoute && this._fromRoute.routeName;
+    const toRouteName = this._toRoute && this._toRoute.routeName;
 
-    const transition = this._getTransition(routeName, prevRouteName);
+    const transition = this._getTransition(fromRouteName, toRouteName);
     if (!transition || !this.state.transitionItems.areAllMeasured()) {
       return null;
     }
 
-    const { from: fromItems, to: toItems } = this._getFilteredFromToItems(transition, prevRouteName, routeName);
+    const { from: fromItems, to: toItems } = this._getFilteredFromToItems(transition, fromRouteName, toRouteName);
     const itemsToClone = transition.getItemsToClone && transition.getItemsToClone(fromItems, toItems);
 
     const hideUntilDone = (items, onFromRoute: boolean) => items.reduce((result, item) => {
@@ -360,7 +360,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
         ...hideUntilDone(itemsToClone, false),
       }
     };
-    inPlaceStyleMap = this._replaceFromToInStyleMap(inPlaceStyleMap, routeName, prevRouteName);
+    inPlaceStyleMap = this._replaceFromToInStyleMap(inPlaceStyleMap, fromRouteName, toRouteName);
     console.log('==> inPlaceStyleMap', inPlaceStyleMap)
     
     return inPlaceStyleMap;
@@ -369,13 +369,13 @@ class CardStack extends Component<DefaultProps, Props, void> {
   _renderOverlay(transitionProps) {
     const fromRouteName = this._fromRoute && this._fromRoute.routeName;
     const toRouteName = this._toRoute && this._toRoute.routeName;
-    const transition = this._getTransition(toRouteName, fromRouteName);
+    const transition = this._getTransition(fromRouteName, toRouteName);
     if (transition) {
       const { from: fromItems, to: toItems } = this._getFilteredFromToItems(transition, fromRouteName, toRouteName);
       const itemsToClone = transition.getItemsToClone && transition.getItemsToClone(fromItems, toItems);
 
       let styleMap = transition.createAnimatedStyleMapForClones && transition.createAnimatedStyleMapForClones(fromItems, toItems, transitionProps);
-      styleMap = styleMap && this._replaceFromToInStyleMap(styleMap, toRouteName, fromRouteName);
+      styleMap = styleMap && this._replaceFromToInStyleMap(styleMap, fromRouteName, toRouteName);
 
       // TODO what if an item is the parent of another item?
       const clones = itemsToClone.map(item => {
@@ -543,7 +543,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const fromRoute = this._fromRoute;
     const toRoute = this._toRoute;
     if (fromRoute && toRoute) {
-      const transition = this._getTransition(toRoute.routeName, fromRoute.routeName);
+      const transition = this._getTransition(fromRoute.routeName, toRoute.routeName);
       let itemsToMeasure = [];
       if (transition && transition.getItemsToMeasure) {
         const { from, to } = this._getFilteredFromToItems(transition, fromRoute.routeName, toRoute.routeName);
