@@ -59,8 +59,16 @@ function createTransitionComponent(Component) {
       // transitionProps: React.PropTypes.object,
       // transitionConfigs: React.PropTypes.array,
       routeName: React.PropTypes.string,
-      transitionStyleMap: React.PropTypes.object,
+      transitionStylesChange: React.PropTypes.object,
     };
+
+    constructor(props, context) {
+      super(props, context);
+      this._updateTransitionStyleMap = this._updateTransitionStyleMap.bind(this);
+      this.state = {
+        transitionStyleMap: null,
+      }
+    }
 
     // This is needed to pass the invariant in PointerEventsContainer
     setNativeProps(props) {
@@ -92,7 +100,8 @@ function createTransitionComponent(Component) {
       //   return {};//TransitionConfigs.defaultTransitionConfig(transitionProps).screenInterpolator(transitionProps));
       // }
       const {id} = this.props;
-      const {routeName, transitionStyleMap} = this.context;
+      const {routeName} = this.context;
+      const {transitionStyleMap} = this.state;
       return transitionStyleMap && transitionStyleMap[routeName] && transitionStyleMap[routeName][id];
     }
 
@@ -118,25 +127,32 @@ function createTransitionComponent(Component) {
       );
     }
 
-    componentDidMount() {
-      const { registerTransitionItem } = this.context;
-      if (!registerTransitionItem) return;
+    _updateTransitionStyleMap(transitionStyleMap) {
+      this.setState({transitionStyleMap});
+    }
 
-      const nativeHandle = findNodeHandle(this);
-      registerTransitionItem(new TransitionItem
-        (
-        this.props.id,
-        this.context.routeName,
-        this.render(),
-        nativeHandle,
-      ));
+    componentDidMount() {
+      const { registerTransitionItem, transitionStylesChange } = this.context;
+
+      transitionStylesChange && transitionStylesChange.subscribe(this._updateTransitionStyleMap);
+
+      if (registerTransitionItem) {
+        const nativeHandle = findNodeHandle(this);
+        registerTransitionItem(new TransitionItem
+          (
+          this.props.id,
+          this.context.routeName,
+          this.render(),
+          nativeHandle,
+        ));
+      }
     }
 
     componentWillUnmount() {
-      const { unregisterTransitionItem } = this.context;
-      if (!unregisterTransitionItem) return;
+      const { unregisterTransitionItem, transitionStylesChange } = this.context;
 
-      unregisterTransitionItem(this.props.id, this.context.routeName);
+      transitionStylesChange && transitionStylesChange.unsubscribe(this._updateTransitionStyleMap);
+      unregisterTransitionItem && unregisterTransitionItem(this.props.id, this.context.routeName);
     }
   }
   return TransitionComponent;

@@ -28,6 +28,22 @@ type Props = NavigationSceneRendererProps & {
   style: any,
 };
 
+class TransitionStylesChange {
+  constructor() {
+    this._subscriptions = [];
+  }
+  subscribe(f) {
+    this._subscriptions.push(f);
+  }
+  unsubscribe(f) {
+    const idx = this._subscriptions.indexOf(f);
+    if (idx >= 0) this._subscriptions.splice(idx, 1);
+  }
+  dispatch(styleMap) {
+    this._subscriptions.forEach(f => f(styleMap));
+  }
+}
+
 /**
  * Component that renders the scene as card for the <NavigationCardStack />.
  */
@@ -48,17 +64,28 @@ class Card extends React.Component<any, Props, any> {
     // transitionProps: React.PropTypes.object.isRequired,
     // transitionConfigs: React.PropTypes.array.isRequired,
     routeName: React.PropTypes.string.isRequired,
-    transitionStyleMap: React.PropTypes.object,
+    transitionStylesChange: React.PropTypes.object,
   };
 
   props: Props;
+
+  constructor(props) {
+    super(props);
+    this._transitionStylesChange = new TransitionStylesChange();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.transitionStyleMap !== nextProps.transitionStyleMap) {
+      this._transitionStylesChange.dispatch(nextProps.transitionStyleMap);
+    }
+  }
 
   getChildContext() {
     return {
       // transitionProps: this.props.transitionProps,
       // transitionConfigs: this.props.transitionConfigs,
       routeName: this.props.scene.route.routeName,
-      transitionStyleMap: this.props.transitionStyleMap,
+      transitionStylesChange: this._transitionStylesChange,
     };
   }
 
