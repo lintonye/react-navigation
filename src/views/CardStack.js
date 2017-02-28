@@ -410,7 +410,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     }
 
     const styleMap = this._createInPlaceTransitionStyleMap(props, prevTransitionProps);
-    console.log('==> inPlaceStyleMap', styleMap);
+    // console.log('==> inPlaceStyleMap', styleMap);
 
     const overlay = this._renderOverlay(props);
     return (
