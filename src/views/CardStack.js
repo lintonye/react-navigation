@@ -7,6 +7,7 @@ import {
   Platform,
   View,
   UIManager,
+  Animated,
 } from 'react-native';
 import invariant from 'invariant';
 import _ from 'lodash';
@@ -383,10 +384,16 @@ class CardStack extends Component<DefaultProps, Props, void> {
           style: [item.reactElement.props.style, styles.clonedItem, animatedStyle],
         }, []);
       });
+      const animatedContainerStyle = {
+        opacity: transitionProps.progress.interpolate({
+          inputRange: [0, 0.01, 0.99, 1],
+          outputRange: [0, 1, 1, 0],
+        })
+      };
       return (
-        <View style={styles.overlay} pointerEvents="none">
+        <Animated.View style={[styles.overlay, animatedContainerStyle]} pointerEvents="none">
           {clones}
-        </View>
+        </Animated.View>
       );
     } else {
       return null;
