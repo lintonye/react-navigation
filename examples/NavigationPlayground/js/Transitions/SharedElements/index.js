@@ -7,7 +7,7 @@ import PhotoDetail from './PhotoDetail';
 import { Transition } from 'react-navigation';
 import _ from 'lodash';
 
-const {createTransition} = Transition;
+const {createTransition, together} = Transition;
 
 const SharedElements = (filter) => ({
   filter,
@@ -55,13 +55,8 @@ const SharedElements = (filter) => ({
       result[id] = { left, top, width, height, right: null, bottom: null };
       return result;
     };
-    const createHideStyle = (result, id) => {
-      result[id] = { opacity: 0 };
-      return result;
-    };
     return {
       from: itemIdsOnBoth.reduce(createSharedItemStyle, {}),
-      to: itemIdsOnBoth.reduce(createHideStyle, {}),
     }
   }
 });
@@ -95,14 +90,55 @@ const CrossFade = (filter) => ({
   }
 })
 
+const DelayedFadeInToRoute = (filter) => ({
+  filter,
+  createAnimatedStyleMap(
+    itemsOnFromRoute: Array<*>, 
+    itemsOnToRoute: Array<*>, 
+    transitionProps) {
+    return {
+      to: itemsOnToRoute.reduce((result, item) => {
+        const opacity = transitionProps.progress.interpolate({
+          inputRange: [0, 0.8, 1],
+          outputRange: [0, 0, 1],
+        })
+        result[item.id] = { opacity };
+        return result;
+      }, {}),
+    }
+  }  
+});
+
+const FastFadeOutFromRoute = (filter) => ({
+  filter,
+  createAnimatedStyleMap(
+    itemsOnFromRoute: Array<*>, 
+    itemsOnToRoute: Array<*>, 
+    transitionProps) {
+    return {
+      from: itemsOnFromRoute.reduce((result, item) => {
+        const opacity = transitionProps.progress.interpolate({
+          inputRange: [0, 0.2, 1],
+          outputRange: [1, 0, 0],
+        })
+        result[item.id] = { opacity };
+        return result;
+      }, {}),
+    }
+  }  
+});
+
 const SharedImage = createTransition(SharedElements, /image-.+/);
 const CrossFadeScene = createTransition(CrossFade, /\$scene.+/);
+
+const DelayedFadeInDetail = createTransition(DelayedFadeInToRoute, /\$scene-PhotoDetail/);
+const FastFadeOutDetail = createTransition(FastFadeOutFromRoute, /\$scene-PhotoDetail/);
 
 const transitions = [
   // { from: 'PhotoGrid', to: 'PhotoDetail', transition: CrossFadeScene },
   // { from: 'PhotoDetail', to: 'PhotoGrid', transition: CrossFadeScene },
-  { from: 'PhotoGrid', to: 'PhotoDetail', transition: SharedImage },
-  { from: 'PhotoDetail', to: 'PhotoGrid', transition: SharedImage },
+  { from: 'PhotoGrid', to: 'PhotoDetail', transition: together(SharedImage, DelayedFadeInDetail)},
+  { from: 'PhotoDetail', to: 'PhotoGrid', transition: together(SharedImage, FastFadeOutDetail) },
 ];
 
 const App = StackNavigator({

@@ -6,6 +6,7 @@ import {
 import TransitionItems from './TransitionItems';
 import createTransitionComponent from './createTransitionComponent';
 import createTransition from './createTransition';
+import {together} from './composition';
 
 export default {
   View: createTransitionComponent(View),
@@ -13,4 +14,5 @@ export default {
   Text: createTransitionComponent(Text),
   createTransitionComponent,
   createTransition,
+  together,
 }
