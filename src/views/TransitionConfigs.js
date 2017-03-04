@@ -113,7 +113,8 @@ const defaultTransition = (filter) => ({
   }
 });
 
-const DefaultSceneTransition = Transition.createTransition(defaultTransition, /\$scene-.+/);
+// TODO Transition will resolve to undefined when the package is installed from npm.
+const DefaultSceneTransition = null;// Transition.createTransition(defaultTransition, /\$scene-.+/);
 
 const defaultTransitions = () => [
   { from: '*', to: '*', transition: DefaultSceneTransition }
