@@ -181,6 +181,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
       const toRoute = getRoute(nextProps);
       this._fromRoute = fromRoute;
       this._toRoute = toRoute;
+      this._receivedDifferentNavigationProp = true;
       // When coming back from scene, onLayout won't be triggered, we'll need to do it manually.
       this._setTransitionItemsState(prevItems => prevItems.removeAllMetrics(), 
         () => this._onLayout());
@@ -191,11 +192,11 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const self = this;
     return {
       registerTransitionItem(item: TransitionItem) {
-        // if (item.nativeHandle===7) console.log('==> registering', item.toString());
+        console.log('==> registering', item.toString());
         self._setTransitionItemsState(prevItems => prevItems.add(item));
       },
       unregisterTransitionItem(id: string, routeName: string) {
-        // console.log('==> unregistering', id, routeName);
+        console.log('==> unregistering', id, routeName);
         self._setTransitionItemsState(prevItems => prevItems.remove(id, routeName));
       },
     };
@@ -556,6 +557,11 @@ class CardStack extends Component<DefaultProps, Props, void> {
   }
 
   async _onLayout() {
+    // This guarantees that the measurement is only done after navigation.
+    // avoid unnecesary state updates when onLayout is called, e.g. when scrolling a ListView
+    if (!this._receivedDifferentNavigationProp) return;
+    this._receivedDifferentNavigationProp = false;
+
     const fromRoute = this._fromRoute;
     const toRoute = this._toRoute;
     if (fromRoute && toRoute) {
