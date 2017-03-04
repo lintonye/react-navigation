@@ -590,10 +590,11 @@ class CardStack extends Component<DefaultProps, Props, void> {
   _createDefaultHideCardStyle(
     props: NavigationSceneRendererProps,
     prevTransitionProps: NavigationTransitionProps) {
+    const currentIndex = props.index;
     const prevIndex = prevTransitionProps && prevTransitionProps.index;
     const sceneIndex = props.scene.index;
     console.log('prevIndex', prevIndex, 'sceneIndex', sceneIndex);
-    const opacity = prevIndex === null || prevIndex === sceneIndex ? 1 : 0;
+    const opacity = (prevIndex === null && currentIndex === sceneIndex) || prevIndex === sceneIndex ? 1 : 0;
     return { opacity };
   }
 
