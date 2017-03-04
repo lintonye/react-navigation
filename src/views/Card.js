@@ -89,19 +89,6 @@ class Card extends React.Component<any, Props, any> {
     };
   }
 
-  /**
-   * Set the opacity of the outgoing scene to 0 by default to prevent overdraw issue
-   * 
-   * @param {*} props 
-   */
-  _createDefaultHideCardStyle(props: NavigationSceneRendererProps) {
-    const { scene: {index}, position } = props;
-    const opacity = position.interpolate({
-      inputRange: [ index - 1, index, index + 1],
-      outputRange: [ 0, 1, 0],
-    });
-    return  { opacity };
-  }
 
   render() {
     const {
@@ -119,15 +106,13 @@ class Card extends React.Component<any, Props, any> {
       }) :
       panHandlers;
     
-    const defaultHideCardStyle = this._createDefaultHideCardStyle(props);
-
     return (
       <Transition.View
         id={`$scene-${this.props.scene.route.routeName}`}
         {...viewPanHandlers}
         pointerEvents={pointerEvents}
         ref={this.props.onComponentRef}
-        style={[styles.main, defaultHideCardStyle, style]}
+        style={[styles.main, style]}
         onLayout={this.props.onLayout}
       >
         {renderScene(props)}

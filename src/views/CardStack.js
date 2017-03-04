@@ -168,9 +168,12 @@ class CardStack extends Component<DefaultProps, Props, void> {
     if (this.props !== nextProps) {
       return true;
     } else {
-      return nextState.transitionItems.areAllMeasured() &&
+      return (
+        this.state.transitionItems !== nextState.transitionItems &&
+        nextState.transitionItems.areAllMeasured() &&
         // prevent unnecesary updates when registering/unregistering transition items
-        this.state.transitionItems.count() === nextState.transitionItems.count();
+        this.state.transitionItems.count() === nextState.transitionItems.count()
+      );
     }
   }
 
@@ -213,7 +216,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
   componentDidUpdate(prevProps, prevState) {
     this.updateCount = this.updateCount || 0;
     this.updateCount++;
-    console.log(`====================================> ${this.updateCount} cardStack updated propsChanged=${this.props !== prevProps}, stateChanged=${this.state !== prevState}`);
+    console.log(`====================================> ${this.updateCount} cardStack updated propsChanged=${this.props !== prevProps}, stateChanged=${this.state !== prevState}, areAllMeasured=${this.state.transitionItems.areAllMeasured()}, prevState.areAllMeasured=${prevState.transitionItems.areAllMeasured()} sameItems?=${this.state.transitionItems===prevState.transitionItems}`);
   }
 
   render() {
@@ -428,7 +431,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
               ...props,
               scene,
               navigation: this._getChildNavigation(scene),
-            }, styleMap)
+            }, prevTransitionProps, styleMap)
           )
           }
         </View>
@@ -578,7 +581,26 @@ class CardStack extends Component<DefaultProps, Props, void> {
     }
   }
 
-  _renderScene(props: NavigationSceneRendererProps, transitionStyleMap): React.Element<*> {
+  /**
+   * By default, keep the current scene and not show the incoming scene (by setting their opacity)
+   * to prevent flickering and overdraw issues.
+   * 
+   * @param {*} props
+   */
+  _createDefaultHideCardStyle(
+    props: NavigationSceneRendererProps,
+    prevTransitionProps: NavigationTransitionProps) {
+    const prevIndex = prevTransitionProps && prevTransitionProps.index;
+    const sceneIndex = props.scene.index;
+    console.log('prevIndex', prevIndex, 'sceneIndex', sceneIndex);
+    const opacity = prevIndex === null || prevIndex === sceneIndex ? 1 : 0;
+    return { opacity };
+  }
+
+  _renderScene(
+    props: NavigationSceneRendererProps, 
+    prevTransitionProps: NavigationTransitionProps,
+    transitionStyleMap): React.Element<*> {
     const isModal = this.props.mode === 'modal';
 
     let panHandlers = null;
@@ -613,6 +635,8 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
     const SceneComponent = this.props.router.getComponentForRouteName(props.scene.route.routeName);
 
+    const defaultHideCardStyle = this._createDefaultHideCardStyle(props, prevTransitionProps);
+
     return (
       <Card
         {...props}
@@ -620,7 +644,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
         onLayout={this._onLayout.bind(this)}
         panHandlers={panHandlers}
         renderScene={(sceneProps: *) => this._renderInnerCard(SceneComponent, sceneProps)}
-        style={this.props.cardStyle}
+        style={[defaultHideCardStyle, this.props.cardStyle]}
         transitionStyleMap={transitionStyleMap}
       />
     );
