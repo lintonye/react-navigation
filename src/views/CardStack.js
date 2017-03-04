@@ -168,7 +168,9 @@ class CardStack extends Component<DefaultProps, Props, void> {
     if (this.props !== nextProps) {
       return true;
     } else {
-      return nextState.transitionItems.areAllMeasured();
+      return nextState.transitionItems.areAllMeasured() &&
+        // prevent unnecesary updates when registering/unregistering transition items
+        this.state.transitionItems.count() === nextState.transitionItems.count();
     }
   }
 
@@ -192,11 +194,11 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const self = this;
     return {
       registerTransitionItem(item: TransitionItem) {
-        console.log('==> registering', item.toString());
+        // console.log('==> registering', item.toString());
         self._setTransitionItemsState(prevItems => prevItems.add(item));
       },
       unregisterTransitionItem(id: string, routeName: string) {
-        console.log('==> unregistering', id, routeName);
+        // console.log('==> unregistering', id, routeName);
         self._setTransitionItemsState(prevItems => prevItems.remove(id, routeName));
       },
     };
