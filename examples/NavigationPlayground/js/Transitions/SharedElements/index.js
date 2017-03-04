@@ -73,6 +73,10 @@ const FastFadeOutFromRoute = (filter) => ({
         result[item.id] = { opacity };
         return result;
       }, {}),
+      to: itemsOnToRoute.reduce((result, item) => {
+        result[item.id] = { opacity: 1};
+        return result;
+      }, {})
     }
   }
 });
@@ -81,7 +85,7 @@ const SharedImage = createTransition(Transitions.SharedElement, /image-.+/);
 const CrossFadeScene = createTransition(CrossFade, /\$scene.+/);
 
 const DelayedFadeInDetail = createTransition(DelayedFadeInToRoute, /\$scene-PhotoDetail/);
-const FastFadeOutDetail = createTransition(FastFadeOutFromRoute, /\$scene-PhotoDetail/);
+const FastFadeOutDetail = createTransition(FastFadeOutFromRoute, /\$scene-.+/);
 
 // TODO slide doesn't seem easy to implement, perhaps need to expose current route index and interpolate position instead of progress?
 const Slide = (filter) => ({
@@ -147,11 +151,25 @@ const StaggeredAppear = (filter) => ({
 const SlideScenes = createTransition(Slide, /\$scene-.*/);
 const StaggeredAppearImages = createTransition(StaggeredAppear, /image-.+/);
 
+const NoOp = (filter) => ({
+  filter,
+  createAnimatedStyleMap() {
+    console.log('NoOp transition called');
+  }
+});
+const NoOpImage = createTransition(NoOp, /image-.+/);
+
 const transitions = [
   // { from: 'PhotoGrid', to: 'PhotoDetail', transition: CrossFadeScene },
   // { from: 'PhotoDetail', to: 'PhotoGrid', transition: CrossFadeScene },
-  { from: 'PhotoGrid', to: 'PhotoDetail', transition: together(SharedImage, DelayedFadeInDetail)},
-  { from: 'PhotoDetail', to: 'PhotoGrid', transition: together(SharedImage, FastFadeOutDetail) },
+  // { from: 'PhotoGrid', to: 'PhotoDetail', transition: NoOpImage},
+  // { from: 'PhotoDetail', to: 'PhotoGrid', transition: NoOpImage},
+  // { from: 'PhotoGrid', to: 'PhotoDetail', transition: together(SharedImage, DelayedFadeInDetail)},
+  // { from: 'PhotoDetail', to: 'PhotoGrid', transition: together(SharedImage, FastFadeOutDetail) },
+  // { from: 'PhotoGrid', to: 'PhotoDetail', transition: DelayedFadeInDetail},
+  // { from: 'PhotoDetail', to: 'PhotoGrid', transition: FastFadeOutDetail },
+  { from: 'PhotoGrid', to: 'PhotoDetail', transition: SharedImage},
+  { from: 'PhotoDetail', to: 'PhotoGrid', transition: SharedImage},
   // { from: 'PhotoGrid', to: 'PhotoDetail', transition: CrossFadeScene },
   // { from: 'PhotoDetail', to: 'PhotoGrid', transition: together(StaggeredAppearImages, SlideScenes) },
 ];
