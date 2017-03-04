@@ -38,6 +38,14 @@ const photos = Array(50).fill(0).map(_ => ({
   image: images[faker.random.number(images.length - 1)],
   title: faker.name.findName(),
   description: faker.lorem.paragraphs(10),
+  comments: Array(20).fill(0).map(_ => (
+    {
+      author: faker.name.findName(),
+      // avatar: avatars[faker.random.number(4)],
+      comment: faker.lorem.sentence(),
+      time: '12/21/2017',
+    }
+  ))
 }));
 
 const colCount = 3;
