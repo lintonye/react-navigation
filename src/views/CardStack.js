@@ -377,7 +377,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const fromRouteName = this._fromRoute && this._fromRoute.routeName;
     const toRouteName = this._toRoute && this._toRoute.routeName;
     const transition = this._getTransition(fromRouteName, toRouteName);
-    if (transition) {
+    if (transition && this.state.transitionItems.areAllMeasured()) {
       const { from: fromItems, to: toItems } = this._getFilteredFromToItems(transition, fromRouteName, toRouteName);
       const itemsToClone = transition.getItemsToClone && transition.getItemsToClone(fromItems, toItems);
       if (!itemsToClone) return null;

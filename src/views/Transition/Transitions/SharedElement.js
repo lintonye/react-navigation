@@ -28,7 +28,6 @@ const SharedElement = (filter) => ({
     const createSharedItemStyle = (result, id) => {
       const fromItem = itemsOnFromRoute.find(item => item.id === id);
       const toItem = itemsOnToRoute.find(item => item.id === id);
-      if (!fromItem.isMeasured() || !toItem.isMeasured()) return null; // TODO temporary line to avoid crashes, should remove
       console.log('fromItem', fromItem.toString(), 'toItem', toItem.toString());
       const inputRange = [0, 1];
       const left = progress.interpolate({
