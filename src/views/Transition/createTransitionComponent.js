@@ -117,7 +117,7 @@ function createTransitionComponent(Component) {
       const {id, ...rest} = this.props;
       const AnimatedComponent = createAnimatedComponent(Component);
       const animatedStyle = this._getTransitionStyle();
-      // console.log(`======> id=${id} styleInTransitionComp`, animatedStyle)
+      // console.log(`======> id=${id} styleInTransitionComp`, animatedStyle, 'props.style', this.props.style)
       return (
         <AnimatedComponent {...rest}
           ref={c => this._component = c}

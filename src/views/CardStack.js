@@ -213,11 +213,11 @@ class CardStack extends Component<DefaultProps, Props, void> {
   }
 
   // Just for testing //TODO delete when done with performance fixing
-  componentDidUpdate(prevProps, prevState) {
-    this.updateCount = this.updateCount || 0;
-    this.updateCount++;
-    console.log(`====================================> ${this.updateCount} cardStack updated propsChanged=${this.props !== prevProps}, stateChanged=${this.state !== prevState}, areAllMeasured=${this.state.transitionItems.areAllMeasured()}, prevState.areAllMeasured=${prevState.transitionItems.areAllMeasured()} sameItems?=${this.state.transitionItems===prevState.transitionItems}`);
-  }
+  // componentDidUpdate(prevProps, prevState) {
+  //   this.updateCount = this.updateCount || 0;
+  //   this.updateCount++;
+  //   console.log(`====================================> ${this.updateCount} cardStack updated propsChanged=${this.props !== prevProps}, stateChanged=${this.state !== prevState}, areAllMeasured=${this.state.transitionItems.areAllMeasured()}, prevState.areAllMeasured=${prevState.transitionItems.areAllMeasured()} sameItems?=${this.state.transitionItems===prevState.transitionItems}`);
+  // }
 
   render() {
     return (
@@ -593,8 +593,8 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const currentIndex = props.index;
     const prevIndex = prevTransitionProps && prevTransitionProps.index;
     const sceneIndex = props.scene.index;
-    console.log('prevIndex', prevIndex, 'sceneIndex', sceneIndex);
     const opacity = (prevIndex === null && currentIndex === sceneIndex) || prevIndex === sceneIndex ? 1 : 0;
+    // console.log('prevIndex', prevIndex, 'sceneIndex', sceneIndex, 'opacity', opacity);
     return { opacity };
   }
 
