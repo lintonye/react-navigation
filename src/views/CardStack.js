@@ -340,10 +340,10 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
   _interpolateStyleMap(styleMap, transitionProps: NavigationTransitionProps) {
     const interpolate = (value) => {
-      if (value.inputRange && value.outputRange) {
+      if (value.outputRange) {
         const delta = this._toRoute.index - this._fromRoute.index;
         const { position } = transitionProps;
-        let inputRange = value.inputRange.map(r => this._fromRoute.index + r * delta);
+        let inputRange = (value.inputRange || [0, 1]).map(r => this._fromRoute.index + r * delta);
         let outputRange = value.outputRange;
         if (delta < 0) {
           inputRange = inputRange.reverse();
