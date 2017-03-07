@@ -338,6 +338,39 @@ class CardStack extends Component<DefaultProps, Props, void> {
     return { from: fromItems, to: toItems };
   }
 
+  _interpolateStyleMap(styleMap, transitionProps: NavigationTransitionProps) {
+    const interpolate = (value) => {
+      if (value.inputRange && value.outputRange) {
+        const delta = this._toRoute.index - this._fromRoute.index;
+        const { position } = transitionProps;
+        let inputRange = value.inputRange.map(r => this._fromRoute.index + r * delta);
+        let outputRange = value.outputRange;
+        if (delta < 0) {
+          inputRange = inputRange.reverse();
+          outputRange = outputRange.reverse();
+        }
+        return position.interpolate({
+          inputRange,
+          outputRange,
+        });
+      } else {
+        return value;
+      }
+    };
+    const interpolateStyle = (result, value, prop) => {
+      result[prop] = interpolate(value);
+      return result;
+    };
+    const interpolateStyles = (result, styles, id) => {
+      result[id] = styles && _.reduce(styles, interpolateStyle, {});
+      return result;
+    };
+    return styleMap && {
+      from: styleMap.from && _.reduce(styleMap.from, interpolateStyles, {}),
+      to: styleMap.to && _.reduce(styleMap.to, interpolateStyles, {}),
+    };
+  }
+
   _createInPlaceTransitionStyleMap(
     transitionProps: NavigationTransitionProps,
     prevTransitionProps:NavigationTransitionProps) {
@@ -350,7 +383,8 @@ class CardStack extends Component<DefaultProps, Props, void> {
     }
 
     const { from: fromItems, to: toItems } = this._getFilteredFromToItems(transition, fromRouteName, toRouteName);
-    const itemsToClone = transition.getItemsToClone && transition.getItemsToClone(fromItems, toItems);
+    const itemsToClone = transition.getItemsToClone && 
+      this._interpolateStyleMap(transition.getItemsToClone(fromItems, toItems));
 
     const hideUntilDone = (items, onFromRoute: boolean) => items && items.reduce((result, item) => {
       result[item.id] = this._hideTransitionViewUntilDone(transitionProps, onFromRoute);
@@ -382,7 +416,8 @@ class CardStack extends Component<DefaultProps, Props, void> {
       const itemsToClone = transition.getItemsToClone && transition.getItemsToClone(fromItems, toItems);
       if (!itemsToClone) return null;
 
-      let styleMap = transition.createAnimatedStyleMapForClones && transition.createAnimatedStyleMapForClones(fromItems, toItems, transitionProps);
+      let styleMap = transition.createAnimatedStyleMapForClones && 
+        this._interpolateStyleMap(transition.createAnimatedStyleMapForClones(fromItems, toItems, transitionProps));
       styleMap = styleMap && this._replaceFromToInStyleMap(styleMap, fromRouteName, toRouteName);
 
       // TODO what if an item is the parent of another item?
