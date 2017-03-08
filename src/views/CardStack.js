@@ -372,7 +372,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
         outputRange,
       });
     };
-    return convertStyleMap(styleMap, interpolate);
+    return convertStyleMap(styleMap, interpolate, 'processTransform');
   }
 
   _createInPlaceTransitionStyleMap(

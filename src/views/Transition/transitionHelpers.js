@@ -10,7 +10,20 @@ export function initTransition(Transition, ...idRegexes) {
   return Transition && Transition(createIdRegexFilter(idRegexes));
 }
 
-export function convertStyleMap(styleMap, convertStyleValue: (styleValue: any) => any) {
+const isTransformProp = (prop: string) => (
+  ['perspective', 'rotate', 'rotateX', 'rotateY', 'rotateZ', 
+    'scale', 'scaleX', 'scaleY', 'translateX', 'translateY', 'skewX', 'skewY'].includes(prop)
+);
+
+const mergeTransform = (transforms: ?Array<*>, prop: string, value: object) => {
+  const array = transforms || [];
+  const index = array.find(t => !_.isNil(t[prop]));
+  if (index >= 0) array[index][prop] = value;
+  else array.push({[prop]: value});
+  return array;
+}
+
+export function convertStyleMap(styleMap, convertStyleValue: (styleValue: object) => any, processTransform) {
   const accumulateStyle = (result, styleValue, prop) => {
     let convertedValue;
     if (styleValue && _.isArray(styleValue.outputRange)) {
@@ -19,7 +32,11 @@ export function convertStyleMap(styleMap, convertStyleValue: (styleValue: any) =
     } else {
       convertedValue = styleValue;
     }
-    result[prop] = convertedValue;
+    if (processTransform && isTransformProp(prop)) {
+      result['transform'] = mergeTransform(result['transform'], prop, convertedValue);
+    } else {
+      result[prop] = convertedValue;
+    }
     return result;
   };
   const accumulateStyles = (result, style, id) => {
