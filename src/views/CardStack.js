@@ -42,6 +42,7 @@ import type { TransitionConfig } from './TransitionConfigs';
 import TransitionConfigs from './TransitionConfigs';
 
 import TransitionItems from './Transition/TransitionItems';
+import { convertStyleMap } from './Transition/transitionHelpers';
 
 const NativeAnimatedModule = NativeModules && NativeModules.NativeAnimatedModule;
 
@@ -181,7 +182,10 @@ class CardStack extends Component<DefaultProps, Props, void> {
     // console.log('routeName', getRoute(this.props), 'nextRoute', getRoute(nextProps))
 
     if (this.props.navigation !== nextProps.navigation) {
-      const getRoute = props => props.navigation && props.navigation.state.routes[props.navigation.state.index];
+      const getRoute = props => props.navigation && {
+        ...props.navigation.state.routes[props.navigation.state.index],
+        index: props.navigation.state.index,
+      };
       const fromRoute = getRoute(this.props);
       const toRoute = getRoute(nextProps);
       this._fromRoute = fromRoute;
@@ -340,35 +344,21 @@ class CardStack extends Component<DefaultProps, Props, void> {
 
   _interpolateStyleMap(styleMap, transitionProps: NavigationTransitionProps) {
     const interpolate = (value) => {
-      if (value.outputRange) {
-        const delta = this._toRoute.index - this._fromRoute.index;
-        const { position } = transitionProps;
-        let inputRange = (value.inputRange || [0, 1]).map(r => this._fromRoute.index + r * delta);
-        let outputRange = value.outputRange;
-        if (delta < 0) {
-          inputRange = inputRange.reverse();
-          outputRange = outputRange.reverse();
-        }
-        return position.interpolate({
-          inputRange,
-          outputRange,
-        });
-      } else {
-        return value;
+      const delta = this._toRoute.index - this._fromRoute.index;
+      const { position } = transitionProps;
+      let inputRange = value.inputRange.map(r => this._fromRoute.index + r * delta);
+      let outputRange = value.outputRange;
+      if (delta < 0) {
+        inputRange = inputRange.reverse();
+        outputRange = outputRange.reverse();
       }
+      return position.interpolate({
+        ...value,
+        inputRange,
+        outputRange,
+      });
     };
-    const interpolateStyle = (result, value, prop) => {
-      result[prop] = interpolate(value);
-      return result;
-    };
-    const interpolateStyles = (result, styles, id) => {
-      result[id] = styles && _.reduce(styles, interpolateStyle, {});
-      return result;
-    };
-    return styleMap && {
-      from: styleMap.from && _.reduce(styleMap.from, interpolateStyles, {}),
-      to: styleMap.to && _.reduce(styleMap.to, interpolateStyles, {}),
-    };
+    return convertStyleMap(styleMap, interpolate);
   }
 
   _createInPlaceTransitionStyleMap(
@@ -383,15 +373,15 @@ class CardStack extends Component<DefaultProps, Props, void> {
     }
 
     const { from: fromItems, to: toItems } = this._getFilteredFromToItems(transition, fromRouteName, toRouteName);
-    const itemsToClone = transition.getItemsToClone && 
-      this._interpolateStyleMap(transition.getItemsToClone(fromItems, toItems));
+    const itemsToClone = transition.getItemsToClone && transition.getItemsToClone(fromItems, toItems);
 
     const hideUntilDone = (items, onFromRoute: boolean) => items && items.reduce((result, item) => {
       result[item.id] = this._hideTransitionViewUntilDone(transitionProps, onFromRoute);
       return result;
     }, {}); 
 
-    const styleMap = transition.createAnimatedStyleMap && transition.createAnimatedStyleMap(fromItems, toItems, transitionProps);
+    const styleMap = transition.createAnimatedStyleMap && 
+      this._interpolateStyleMap(transition.createAnimatedStyleMap(fromItems, toItems, transitionProps), transitionProps);
     let inPlaceStyleMap = {
       from: {
         ...styleMap && styleMap.from,
@@ -417,7 +407,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
       if (!itemsToClone) return null;
 
       let styleMap = transition.createAnimatedStyleMapForClones && 
-        this._interpolateStyleMap(transition.createAnimatedStyleMapForClones(fromItems, toItems, transitionProps));
+        this._interpolateStyleMap(transition.createAnimatedStyleMapForClones(fromItems, toItems, transitionProps), transitionProps);
       styleMap = styleMap && this._replaceFromToInStyleMap(styleMap, fromRouteName, toRouteName);
 
       // TODO what if an item is the parent of another item?
