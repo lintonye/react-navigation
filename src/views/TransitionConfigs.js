@@ -96,7 +96,7 @@ function defaultTransitionConfig(
 
 const defaultTransition = (filter) => ({
   filter,
-  createAnimatedStyleMap(
+  createStyleMap(
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
     transitionProps) {

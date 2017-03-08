@@ -86,13 +86,13 @@ export function sequence(...transitions) {
     return finalResult.styleMap;
   };
   const duration = transitions.reduce((sum, t) => sum + t.duration, 0);
-  const createAnimatedStyleMap = createStyleMapOp('createAnimatedStyleMap');
-  const createAnimatedStyleMapForClones = createStyleMapOp('createAnimatedStyleMapForClones');
+  const createStyleMap = createStyleMapOp('createStyleMap');
+  const createStyleMapForClones = createStyleMapOp('createStyleMapForClones');
   return {
     ...combineCommonProps(transitions),
     duration,
-    createAnimatedStyleMap,
-    createAnimatedStyleMapForClones,
+    createStyleMap,
+    createStyleMapForClones,
   };
 }
 
@@ -109,13 +109,13 @@ export function together(...transitions) {
       return result;
     }, {});
   const duration = transitions.reduce((max, t) => Math.max(max, t.duration), 0);
-  const createAnimatedStyleMap = createStyleMapOp('createAnimatedStyleMap');
-  const createAnimatedStyleMapForClones = createStyleMapOp('createAnimatedStyleMapForClones');
+  const createStyleMap = createStyleMapOp('createStyleMap');
+  const createStyleMapForClones = createStyleMapOp('createStyleMapForClones');
   return {
     ...combineCommonProps(transitions),
     duration,
-    createAnimatedStyleMap,
-    createAnimatedStyleMapForClones,
+    createStyleMap,
+    createStyleMapForClones,
   };
 }
 

@@ -3,7 +3,7 @@
 import { createTransition } from '../transitionHelpers';
 
 const Scale = createTransition({
-  createAnimatedStyleMap(
+  createStyleMap(
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
   ) {
