@@ -97,6 +97,7 @@ export function together(...transitions) {
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
     transitionProps) => transitions.reduce((result, t) => {
+      // TODO duplicated code in sequence
       const fromItems = itemsOnFromRoute.filter(i => t.filter(i.id));
       const toItems = itemsOnToRoute.filter(i => t.filter(i.id));
       const opResult = t[op] && t[op](fromItems, toItems, transitionProps);
