@@ -21,26 +21,6 @@ function combineCommonProps(transitions) {
   };
 }
 
-export function together(...transitions) {
-  const createStyleMapOp = (op: string) => (
-    itemsOnFromRoute: Array<*>, 
-    itemsOnToRoute: Array<*>, 
-    transitionProps) => transitions.reduce((result, t) => {
-      const fromItems = itemsOnFromRoute.filter(i => t.filter(i.id));
-      const toItems = itemsOnToRoute.filter(i => t.filter(i.id));
-      const opResult = t[op] && t[op](fromItems, toItems, transitionProps);
-      if (opResult) result = mergeStyleMap(result, opResult);
-      return result;
-    }, {});
-  const createAnimatedStyleMap = createStyleMapOp('createAnimatedStyleMap');
-  const createAnimatedStyleMapForClones = createStyleMapOp('createAnimatedStyleMapForClones');
-  return {
-    ...combineCommonProps(transitions),
-    createAnimatedStyleMap,
-    createAnimatedStyleMapForClones,
-  };
-}
-
 const offsetStyleMap = (styleMap, start) => convertStyleMap(styleMap, (styleValue) => ({
   ...styleValue,
   inputRange: styleValue.inputRange.map(v => toFixed(start + v)),
@@ -102,6 +82,28 @@ export function sequence(...transitions) {
     return finalResult.styleMap;
   };
   const duration = transitions.reduce((sum, t) => sum + t.duration, 0);
+  const createAnimatedStyleMap = createStyleMapOp('createAnimatedStyleMap');
+  const createAnimatedStyleMapForClones = createStyleMapOp('createAnimatedStyleMapForClones');
+  return {
+    ...combineCommonProps(transitions),
+    duration,
+    createAnimatedStyleMap,
+    createAnimatedStyleMapForClones,
+  };
+}
+
+export function together(...transitions) {
+  const createStyleMapOp = (op: string) => (
+    itemsOnFromRoute: Array<*>, 
+    itemsOnToRoute: Array<*>, 
+    transitionProps) => transitions.reduce((result, t) => {
+      const fromItems = itemsOnFromRoute.filter(i => t.filter(i.id));
+      const toItems = itemsOnToRoute.filter(i => t.filter(i.id));
+      const opResult = t[op] && t[op](fromItems, toItems, transitionProps);
+      if (opResult) result = mergeStyleMap(result, opResult);
+      return result;
+    }, {});
+  const duration = transitions.reduce((max, t) => Math.max(max, t.duration), 0);
   const createAnimatedStyleMap = createStyleMapOp('createAnimatedStyleMap');
   const createAnimatedStyleMapForClones = createStyleMapOp('createAnimatedStyleMapForClones');
   return {
