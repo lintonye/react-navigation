@@ -346,8 +346,10 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const interpolate = (value) => {
       const delta = this._toRoute.index - this._fromRoute.index;
       const { position } = transitionProps;
-      let inputRange = value.inputRange.map(r => this._fromRoute.index + r * delta);
-      let outputRange = value.outputRange;
+      let { inputRange, outputRange } = value;
+      // Make sure the full [0, 1] inputRange is covered to avoid accidental output values
+      inputRange = [0, ...inputRange, 1].map(r => this._fromRoute.index + r * delta);
+      outputRange = [outputRange[0], ...outputRange, outputRange[outputRange.length - 1]];
       if (delta < 0) {
         inputRange = inputRange.reverse();
         outputRange = outputRange.reverse();
