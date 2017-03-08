@@ -5,8 +5,8 @@ import {
 } from 'react-native';
 import TransitionItems from './TransitionItems';
 import createTransitionComponent from './createTransitionComponent';
-import createTransition from './createTransition';
-import {together} from './composition';
+import { createTransition, initTransition } from './transitionHelpers';
+import { together, sequence, tg, sq } from './composition';
 import Transitions from './Transitions';
 
 export default {
@@ -15,6 +15,10 @@ export default {
   Text: createTransitionComponent(Text),
   createTransitionComponent,
   createTransition,
+  initTransition,
   together,
+  sequence,
+  tg,
+  sq,
   Transitions,
 }
