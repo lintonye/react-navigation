@@ -10,22 +10,6 @@ import faker from 'faker';
 
 const {createTransition, initTransition, together, sq, Transitions} = Transition;
 
-const CrossFade = createTransition({
-  createAnimatedStyleMap(
-    itemsOnFromRoute: Array<*>, 
-    itemsOnToRoute: Array<*>, 
-  ) {
-    const fade = (outputRange) => (result, item) => {
-      result[item.id] = { opacity: { outputRange } };
-      return result;
-    }
-    return {
-      from: itemsOnFromRoute.reduce(fade([1, 0]), {}),
-      to: itemsOnToRoute.reduce(fade([0, 1]), {}),
-    }
-  }
-});
-
 const Slide = createTransition({
   createAnimatedStyleMap(
     itemsOnFromRoute: Array<*>, 
@@ -55,7 +39,7 @@ const Slide = createTransition({
 });
 
 const SharedImage = initTransition(Transitions.SharedElement, /image-.+/);
-const CrossFadeScene = initTransition(CrossFade, /\$scene.+/);
+const CrossFadeScene = initTransition(Transitions.CrossFade, /\$scene.+/);
 const SlideScene = initTransition(Slide, /\$scene.+/);
 
 const StaggeredAppear = (filter) => ({
