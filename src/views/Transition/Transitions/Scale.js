@@ -8,7 +8,7 @@ const Scale = createTransition({
     itemsOnToRoute: Array<*>, 
   ) {
     const scale = (outputRange) => (result, item) => {
-      result[item.id] = { opacity: { outputRange } };
+      result[item.id] = { scale: { outputRange } };
       return result;
     }
     return {
