@@ -8,7 +8,7 @@ import { Transition } from 'react-navigation';
 import _ from 'lodash';
 import faker from 'faker';
 
-const {createTransition, initTransition, together, Transitions} = Transition;
+const {createTransition, initTransition, together, sq, Transitions} = Transition;
 
 const CrossFade = createTransition({
   createAnimatedStyleMap(
@@ -107,20 +107,22 @@ const NoOp = (filter) => ({
 const NoOpImage = createTransition(NoOp, /image-.+/);
 
 const transitions = [
-  { from: 'PhotoGrid', to: 'PhotoDetail', transition: CrossFadeScene(1) },
-  { from: 'PhotoDetail', to: 'PhotoGrid', transition: CrossFadeScene(1) },
+  // { from: 'PhotoGrid', to: 'PhotoDetail', transition: CrossFadeScene(1) },
+  // { from: 'PhotoDetail', to: 'PhotoGrid', transition: CrossFadeScene(1) },
   // { from: 'PhotoGrid', to: 'PhotoDetail', transition: NoOpImage},
   // { from: 'PhotoDetail', to: 'PhotoGrid', transition: NoOpImage},
   // { from: 'PhotoGrid', to: 'PhotoDetail', transition: together(SharedImage, DelayedFadeInDetail)},
   // { from: 'PhotoDetail', to: 'PhotoGrid', transition: together(SharedImage, FastFadeOutDetail) },
   // { from: 'PhotoGrid', to: 'PhotoDetail', transition: DelayedFadeInDetail},
   // { from: 'PhotoDetail', to: 'PhotoGrid', transition: FastFadeOutDetail },
-  // { from: 'PhotoGrid', to: 'PhotoDetail', transition: SharedImage},
-  // { from: 'PhotoDetail', to: 'PhotoGrid', transition: SharedImage},
+  // { from: 'PhotoGrid', to: 'PhotoDetail', transition: SharedImage(1)},
+  // { from: 'PhotoDetail', to: 'PhotoGrid', transition: SharedImage(1)},
   // { from: 'PhotoGrid', to: 'PhotoDetail', transition: CrossFadeScene },
   // { from: 'PhotoDetail', to: 'PhotoGrid', transition: together(StaggeredAppearImages, SlideScenes) },
   // { from: 'PhotoGrid', to: 'PhotoDetail', transition: together(SharedImage(), sq(Idle(0.9), CrossFadeScene()))},
   // { from: 'PhotoDetail', to: 'PhotoGrid', transition: together(CrossFadeScene(0.1), SharedImage())},
+  { from: 'PhotoGrid', to: 'PhotoDetail', transition: sq(SharedImage(0.9), CrossFadeScene(0.1))},
+  { from: 'PhotoDetail', to: 'PhotoGrid', transition: sq(CrossFadeScene(0.1), SharedImage(0.9))},
 ];
 
 const App = StackNavigator({
