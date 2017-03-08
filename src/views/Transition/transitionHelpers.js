@@ -42,7 +42,7 @@ const mashStyleMap = (styleMap, duration: number) => {
 }
 
 export function createTransition(transitionConfig) {
-  const { createAnimatedStyleMap, createAnimatedStyleMapForClones, ...rest } = transitionConfig;
+  const { createAnimatedStyleMap, createAnimatedStyleMapForClones, canUseNativeDriver, ...rest } = transitionConfig;
   const createStyleMapHO = (op, duration) => (...args) => {
     const originalStyleMap = transitionConfig[op] && transitionConfig[op](...args);
     return mashStyleMap(originalStyleMap, duration);
@@ -50,6 +50,7 @@ export function createTransition(transitionConfig) {
   return (filter) => (duration: number) => ({
     filter,
     duration,
+    canUseNativeDriver: canUseNativeDriver || (() => true),
     createAnimatedStyleMap: createStyleMapHO('createAnimatedStyleMap', duration),
     createAnimatedStyleMapForClones: createStyleMapHO('createAnimatedStyleMapForClones', duration),
     ...rest,

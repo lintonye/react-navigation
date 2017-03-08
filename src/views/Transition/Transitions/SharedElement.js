@@ -48,6 +48,9 @@ const SharedElement = createTransition({
     return {
       from: itemIdsOnBoth.reduce(createSharedItemStyle, {}),
     }
+  },
+  canUseNativeDriver() {
+    return false;
   }
 });
 

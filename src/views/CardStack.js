@@ -255,13 +255,14 @@ class CardStack extends Component<DefaultProps, Props, void> {
         prevTransitionProps
       ).transitionSpec,
     };
+    const transition = this._getTransition();
     if (
        !!NativeAnimatedModule
        // Native animation support also depends on the transforms used:
-       && CardStackStyleInterpolator.canUseNativeDriver(isModal)
+       && transition.canUseNativeDriver()
     ) {
       // Internal undocumented prop
-      transitionSpec.useNativeDriver = false; //TODO make this user configurable
+      transitionSpec.useNativeDriver = true; //TODO make this user configurable
     }
     return transitionSpec;
   }
@@ -327,7 +328,9 @@ class CardStack extends Component<DefaultProps, Props, void> {
     }
   }
 
-  _getTransition(fromRouteName: string, toRouteName: string) {
+  _getTransition() {
+    const fromRouteName = this._fromRoute && this._fromRoute.routeName;
+    const toRouteName = this._toRoute && this._toRoute.routeName;
     const transitions = this.props.transitionConfigs.filter(c => (
       (c.from === fromRouteName || c.from === '*') &&
       (c.to === toRouteName || c.to === '*')));
@@ -373,7 +376,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const fromRouteName = this._fromRoute && this._fromRoute.routeName;
     const toRouteName = this._toRoute && this._toRoute.routeName;
 
-    const transition = this._getTransition(fromRouteName, toRouteName);
+    const transition = this._getTransition();
     if (!transition || !this.state.transitionItems.areAllMeasured()) {
       return null;
     }
@@ -406,7 +409,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
   _renderOverlay(transitionProps) {
     const fromRouteName = this._fromRoute && this._fromRoute.routeName;
     const toRouteName = this._toRoute && this._toRoute.routeName;
-    const transition = this._getTransition(fromRouteName, toRouteName);
+    const transition = this._getTransition();
     if (transition && this.state.transitionItems.areAllMeasured()) {
       const { from: fromItems, to: toItems } = this._getFilteredFromToItems(transition, fromRouteName, toRouteName);
       const itemsToClone = transition.getItemsToClone && transition.getItemsToClone(fromItems, toItems);
@@ -601,7 +604,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const fromRoute = this._fromRoute;
     const toRoute = this._toRoute;
     if (fromRoute && toRoute) {
-      const transition = this._getTransition(fromRoute.routeName, toRoute.routeName);
+      const transition = this._getTransition();
       let itemsToMeasure = [];
       if (transition && transition.getItemsToMeasure) {
         const { from, to } = this._getFilteredFromToItems(transition, fromRoute.routeName, toRoute.routeName);

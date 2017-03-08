@@ -12,10 +12,14 @@ function combineCommonProps(transitions) {
       if (opResult) result = _.union(result, opResult);
       return result;
     }, []);
+  const canUseNativeDriver = () => (
+    transitions.every(t => _.isNil(t.canUseNativeDriver) || t.canUseNativeDriver())
+  );
   const getItemsToClone = getItemsOp('getItemsToClone');
   const getItemsToMeasure = getItemsOp('getItemsToMeasure');
   return {
     filter,
+    canUseNativeDriver,
     getItemsToClone,
     getItemsToMeasure,
   };
