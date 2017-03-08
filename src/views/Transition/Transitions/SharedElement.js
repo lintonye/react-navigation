@@ -1,7 +1,9 @@
-import _ from 'lodash';
+// @flow
 
-const SharedElement = (filter) => ({
-  filter,
+import _ from 'lodash';
+import { createTransition } from '../transitionHelpers';
+
+const SharedElement = createTransition({
   getItemsToClone(
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*> ) {
@@ -24,30 +26,28 @@ const SharedElement = (filter) => ({
     transitionProps) {
     const itemIdsOnBoth = _.intersectionWith(itemsOnFromRoute, itemsOnToRoute, (i1, i2) => i1.id === i2.id)
       .map(item => item.id);
-    const {progress} = transitionProps;
     const createSharedItemStyle = (result, id) => {
       const fromItem = itemsOnFromRoute.find(item => item.id === id);
       const toItem = itemsOnToRoute.find(item => item.id === id);
       console.log('fromItem', fromItem.toString(), 'toItem', toItem.toString());
-      const inputRange = [0, 1];
-      const left = progress.interpolate({
-        inputRange, outputRange: [fromItem.metrics.x, toItem.metrics.x]
+      const left = {
+        outputRange: [fromItem.metrics.x, toItem.metrics.x]
       });
-      const top = progress.interpolate({
-        inputRange, outputRange: [fromItem.metrics.y, toItem.metrics.y]
-      });
-      const width = progress.interpolate({
-        inputRange, outputRange: [fromItem.metrics.width, toItem.metrics.width]
-      });
-      const height = progress.interpolate({
-        inputRange, outputRange: [fromItem.metrics.height, toItem.metrics.height]
-      });
-      result[id] = { left, top, width, height, right: null, bottom: null };
-      return result;
+const top = {
+  outputRange: [fromItem.metrics.y, toItem.metrics.y]
+});
+const width = {
+  outputRange: [fromItem.metrics.width, toItem.metrics.width]
+});
+const height = {
+  outputRange: [fromItem.metrics.height, toItem.metrics.height]
+});
+result[id] = { left, top, width, height, right: null, bottom: null };
+return result;
     };
-    return {
-      from: itemIdsOnBoth.reduce(createSharedItemStyle, {}),
-    }
+return {
+  from: itemIdsOnBoth.reduce(createSharedItemStyle, {}),
+}
   }
 });
 
