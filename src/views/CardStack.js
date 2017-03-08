@@ -46,6 +46,10 @@ import { convertStyleMap } from './Transition/transitionHelpers';
 
 const NativeAnimatedModule = NativeModules && NativeModules.NativeAnimatedModule;
 
+// The clone items delta must be bigger than the other value to avoid unwanted flickering.
+const OVERLAY_OPACITY_INPUT_RANGE_DELTA = 0.0001;
+const CLONE_ITEMS_OPACITY_INPUT_RANGE_DELTA = 0.01;
+
 type Props = {
   screenProps?: {};
   headerMode: HeaderMode,
@@ -305,11 +309,11 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const {progress} = transitionProps;
     const opacity = (onFromRoute
       ? progress.interpolate({
-          inputRange: [0, 0.00001, 1],
+          inputRange: [0, CLONE_ITEMS_OPACITY_INPUT_RANGE_DELTA, 1],
           outputRange: [1, 0, 0],
         })
       : progress.interpolate({
-          inputRange: [0, 0.99999, 1],
+          inputRange: [0, 1 - CLONE_ITEMS_OPACITY_INPUT_RANGE_DELTA, 1],
           outputRange: [0, 0, 1],
         })
     );
@@ -421,7 +425,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
       });
       const animatedContainerStyle = {
         opacity: transitionProps.progress.interpolate({
-          inputRange: [0, 0.00001, 0.99999, 1],
+          inputRange: [0, OVERLAY_OPACITY_INPUT_RANGE_DELTA, 1 - OVERLAY_OPACITY_INPUT_RANGE_DELTA, 1],
           outputRange: [0, 1, 1, 0],
         })
       };
