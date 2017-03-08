@@ -105,8 +105,8 @@ const transitions = [
   // { from: 'PhotoDetail', to: 'PhotoGrid', transition: together(StaggeredAppearImages, SlideScenes) },
   // { from: 'PhotoGrid', to: 'PhotoDetail', transition: together(SharedImage(), sq(Idle(0.9), CrossFadeScene()))},
   // { from: 'PhotoDetail', to: 'PhotoGrid', transition: together(CrossFadeScene(0.1), SharedImage())},
-  { from: 'PhotoGrid', to: 'PhotoDetail', transition: sq(SharedImage(0.9), CrossFadeScene(0.1))},
-  { from: 'PhotoDetail', to: 'PhotoGrid', transition: sq(CrossFadeScene(0.1), SharedImage(0.9))},
+  { from: 'PhotoGrid', to: 'PhotoDetail', transition: sq(SharedImage(0.9), CrossFadeScene(0.1)), config: {duration: 650}},
+  { from: 'PhotoDetail', to: 'PhotoGrid', transition: sq(CrossFadeScene(0.1), SharedImage(0.9)), config: {duration: 650}},
 ];
 
 const App = StackNavigator({

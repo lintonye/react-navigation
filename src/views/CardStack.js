@@ -253,16 +253,16 @@ class CardStack extends Component<DefaultProps, Props, void> {
       ...this._getTransitionConfig(
         transitionProps,
         prevTransitionProps
-      ).transitionSpec,
+      ),
     };
     const transition = this._getTransition();
     if (
        !!NativeAnimatedModule
        // Native animation support also depends on the transforms used:
-       && transition.canUseNativeDriver()
+       && transition && transition.canUseNativeDriver()
     ) {
       // Internal undocumented prop
-      transitionSpec.useNativeDriver = true; //TODO make this user configurable
+      transitionSpec.useNativeDriver = true;
     }
     return transitionSpec;
   }
@@ -328,14 +328,19 @@ class CardStack extends Component<DefaultProps, Props, void> {
     }
   }
 
-  _getTransition() {
+  _findTransitionContainer() {
     const fromRouteName = this._fromRoute && this._fromRoute.routeName;
     const toRouteName = this._toRoute && this._toRoute.routeName;
     const transitions = this.props.transitionConfigs.filter(c => (
       (c.from === fromRouteName || c.from === '*') &&
       (c.to === toRouteName || c.to === '*')));
     invariant(transitions.length <= 1, `More than one transitions found from "${fromRouteName}" to "${toRouteName}".`);
-    return transitions[0] && transitions[0].transition;
+    return transitions[0];
+  }
+
+  _getTransition() {
+    const tc = this._findTransitionContainer();
+    return tc && tc.transition;
   }
 
   _getFilteredFromToItems(transition, fromRouteName: string, toRouteName: string) {
@@ -495,13 +500,14 @@ class CardStack extends Component<DefaultProps, Props, void> {
       transitionProps,
       prevTransitionProps,
       this.props.mode === 'modal'
-    );
-    if (this.props.transitionConfig) {
+    ).transitionSpec;
+    const tc = this._findTransitionContainer();
+    if (tc) {
       return {
         ...defaultConfig,
-        ...this.props.transitionConfig(),
-      };
-    }
+        ...tc.config,
+      }
+    } 
 
     return defaultConfig;
   }
