@@ -13,7 +13,7 @@ export function initTransition(Transition, ...idRegexes) {
 export function convertStyleMap(styleMap, convertStyleValue: (styleValue: any) => any) {
   const accumulateStyle = (result, styleValue, prop) => {
     let convertedValue;
-    if (_.isArray(styleValue.outputRange)) {
+    if (styleValue && _.isArray(styleValue.outputRange)) {
       const inputRange = styleValue.inputRange || [0, 1];
       convertedValue = convertStyleValue({ ...styleValue, inputRange });
     } else {

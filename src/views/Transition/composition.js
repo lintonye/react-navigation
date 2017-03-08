@@ -76,8 +76,8 @@ const mergeStyles = (styles1, styles2) => {
 };
 
 const mergeStyleMap = (left, right) => ({
-  from: mergeStyles(left.from, right.from),
-  to: mergeStyles(left.to, right.to),
+  from: mergeStyles(left && left.from, right && right.from),
+  to: mergeStyles(left && left.to, right && right.to),
 });
 
 // http://stackoverflow.com/a/10474055/71133
@@ -95,7 +95,7 @@ export function sequence(...transitions) {
       const start = result.start || t.start || 0;
       result = {
         start: start + t.duration,
-        styleMap: mergeStyleMap(result.styleMap || {}, offsetStyleMap(styleMap, start)),
+        styleMap: mergeStyleMap(result.styleMap, offsetStyleMap(styleMap, start)),
       };
       return result;
     }, {});
