@@ -8,17 +8,15 @@ import { Transition } from 'react-navigation';
 import _ from 'lodash';
 import faker from 'faker';
 
-const {initTransition, together, Transitions} = Transition;
+const {createTransition, initTransition, together, Transitions} = Transition;
 
-const CrossFade = (filter) => (duration) => ({
-  filter,
-  duration,
+const CrossFade = createTransition({
   createAnimatedStyleMap(
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
   ) {
     const fade = (outputRange) => (result, item) => {
-      result[item.id] = { opacity: { outputRange } },
+      result[item.id] = { opacity: { outputRange } };
       return result;
     }
     return {
@@ -28,9 +26,7 @@ const CrossFade = (filter) => (duration) => ({
   }
 });
 
-const Slide = (filter) => (duration) => ({
-  filter,
-  duration,
+const Slide = createTransition({
   createAnimatedStyleMap(
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
@@ -111,8 +107,8 @@ const NoOp = (filter) => ({
 const NoOpImage = createTransition(NoOp, /image-.+/);
 
 const transitions = [
-  { from: 'PhotoGrid', to: 'PhotoDetail', transition: CrossFadeScene() },
-  { from: 'PhotoDetail', to: 'PhotoGrid', transition: CrossFadeScene() },
+  { from: 'PhotoGrid', to: 'PhotoDetail', transition: CrossFadeScene(1) },
+  { from: 'PhotoDetail', to: 'PhotoGrid', transition: CrossFadeScene(1) },
   // { from: 'PhotoGrid', to: 'PhotoDetail', transition: NoOpImage},
   // { from: 'PhotoDetail', to: 'PhotoGrid', transition: NoOpImage},
   // { from: 'PhotoGrid', to: 'PhotoDetail', transition: together(SharedImage, DelayedFadeInDetail)},

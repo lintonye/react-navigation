@@ -32,22 +32,22 @@ const SharedElement = createTransition({
       console.log('fromItem', fromItem.toString(), 'toItem', toItem.toString());
       const left = {
         outputRange: [fromItem.metrics.x, toItem.metrics.x]
-      });
-const top = {
-  outputRange: [fromItem.metrics.y, toItem.metrics.y]
-});
-const width = {
-  outputRange: [fromItem.metrics.width, toItem.metrics.width]
-});
-const height = {
-  outputRange: [fromItem.metrics.height, toItem.metrics.height]
-});
-result[id] = { left, top, width, height, right: null, bottom: null };
-return result;
+      };
+      const top = {
+        outputRange: [fromItem.metrics.y, toItem.metrics.y]
+      };
+      const width = {
+        outputRange: [fromItem.metrics.width, toItem.metrics.width]
+      };
+      const height = {
+        outputRange: [fromItem.metrics.height, toItem.metrics.height]
+      };
+      result[id] = { left, top, width, height, right: null, bottom: null };
+      return result;
     };
-return {
-  from: itemIdsOnBoth.reduce(createSharedItemStyle, {}),
-}
+    return {
+      from: itemIdsOnBoth.reduce(createSharedItemStyle, {}),
+    }
   }
 });
 
