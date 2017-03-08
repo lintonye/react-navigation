@@ -305,11 +305,11 @@ class CardStack extends Component<DefaultProps, Props, void> {
     const {progress} = transitionProps;
     const opacity = (onFromRoute
       ? progress.interpolate({
-          inputRange: [0, 0.01, 1],
+          inputRange: [0, 0.00001, 1],
           outputRange: [1, 0, 0],
         })
       : progress.interpolate({
-          inputRange: [0, 0.99, 1],
+          inputRange: [0, 0.99999, 1],
           outputRange: [0, 0, 1],
         })
     );
@@ -421,7 +421,7 @@ class CardStack extends Component<DefaultProps, Props, void> {
       });
       const animatedContainerStyle = {
         opacity: transitionProps.progress.interpolate({
-          inputRange: [0, 0.01, 0.99, 1],
+          inputRange: [0, 0.00001, 0.99999, 1],
           outputRange: [0, 1, 1, 0],
         })
       };
