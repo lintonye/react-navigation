@@ -3,7 +3,7 @@
 import { createTransition } from '../transitionHelpers';
 
 const CrossFade = createTransition({
-  createStyleMap(
+  getStyleMap(
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
   ) {

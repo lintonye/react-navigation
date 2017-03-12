@@ -3,7 +3,7 @@ import { createTransition, initTransition } from '../Transition/transitionHelper
 
 export function initTestTransition(prop, inputRange, outputRange, filterRegex = /foo/) {
   const transition = createTransition({
-    createStyleMap() {
+    getStyleMap() {
       return {
         from: {
           id1: { [prop]: {inputRange, outputRange,} },

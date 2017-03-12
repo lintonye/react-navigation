@@ -394,8 +394,8 @@ class CardStack extends Component<DefaultProps, Props, void> {
       return result;
     }, {}); 
 
-    const styleMap = transition.createStyleMap && 
-      this._interpolateStyleMap(transition.createStyleMap(fromItems, toItems, transitionProps), transitionProps);
+    const styleMap = transition.getStyleMap && 
+      this._interpolateStyleMap(transition.getStyleMap(fromItems, toItems, transitionProps), transitionProps);
     let inPlaceStyleMap = {
       from: {
         ...styleMap && styleMap.from,
@@ -420,8 +420,8 @@ class CardStack extends Component<DefaultProps, Props, void> {
       const itemsToClone = transition.getItemsToClone && transition.getItemsToClone(fromItems, toItems);
       if (!itemsToClone) return null;
 
-      let styleMap = transition.createStyleMapForClones && 
-        this._interpolateStyleMap(transition.createStyleMapForClones(fromItems, toItems, transitionProps), transitionProps);
+      let styleMap = transition.getStyleMapForClones && 
+        this._interpolateStyleMap(transition.getStyleMapForClones(fromItems, toItems, transitionProps), transitionProps);
       styleMap = styleMap && this._replaceFromToInStyleMap(styleMap, fromRouteName, toRouteName);
 
       // TODO what if an item is the parent of another item?

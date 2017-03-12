@@ -20,7 +20,7 @@ const SharedElement = createTransition({
     const onBoth = item => itemIdsOnBoth.includes(item.id);
     return itemsOnFromRoute.filter(onBoth).concat(itemsOnToRoute.filter(onBoth));
   },
-  createStyleMapForClones(
+  getStyleMapForClones(
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
     transitionProps) {

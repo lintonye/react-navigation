@@ -11,7 +11,7 @@ import faker from 'faker';
 const {createTransition, initTransition, together, sq, Transitions} = Transition;
 
 const Slide = createTransition({
-  createStyleMap(
+  getStyleMap(
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
     transitionOptions,
@@ -44,7 +44,7 @@ const SlideScene = initTransition(Slide, /\$scene.+/);
 
 const StaggeredAppear = (filter) => ({
   filter,
-  createStyleMap(
+  getStyleMap(
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
     transitionProps) {
@@ -84,7 +84,7 @@ const StaggeredAppear = (filter) => ({
 
 const NoOp = (filter) => ({
   filter,
-  createStyleMap() {
+  getStyleMap() {
     console.log('NoOp transition called');
   }
 });

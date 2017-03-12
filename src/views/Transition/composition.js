@@ -68,7 +68,7 @@ const mergeStyleMap = (left, right) => ({
 const toFixed = (n: number) => Math.round(n * 1e12) / 1e12;
 
 export function sequence(...transitions) {
-  const createStyleMapOp = (op: string) => (
+  const getStyleMapOp = (op: string) => (
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
     transitionProps) => {
@@ -86,18 +86,18 @@ export function sequence(...transitions) {
     return finalResult.styleMap;
   };
   const duration = transitions.reduce((sum, t) => sum + t.duration, 0);
-  const createStyleMap = createStyleMapOp('createStyleMap');
-  const createStyleMapForClones = createStyleMapOp('createStyleMapForClones');
+  const getStyleMap = getStyleMapOp('getStyleMap');
+  const getStyleMapForClones = getStyleMapOp('getStyleMapForClones');
   return {
     ...combineCommonProps(transitions),
     duration,
-    createStyleMap,
-    createStyleMapForClones,
+    getStyleMap,
+    getStyleMapForClones,
   };
 }
 
 export function together(...transitions) {
-  const createStyleMapOp = (op: string) => (
+  const getStyleMapOp = (op: string) => (
     itemsOnFromRoute: Array<*>, 
     itemsOnToRoute: Array<*>, 
     transitionProps) => transitions.reduce((result, t) => {
@@ -109,13 +109,13 @@ export function together(...transitions) {
       return result;
     }, {});
   const duration = transitions.reduce((max, t) => Math.max(max, t.duration), 0);
-  const createStyleMap = createStyleMapOp('createStyleMap');
-  const createStyleMapForClones = createStyleMapOp('createStyleMapForClones');
+  const getStyleMap = getStyleMapOp('getStyleMap');
+  const getStyleMapForClones = getStyleMapOp('getStyleMapForClones');
   return {
     ...combineCommonProps(transitions),
     duration,
-    createStyleMap,
-    createStyleMapForClones,
+    getStyleMap,
+    getStyleMapForClones,
   };
 }
 

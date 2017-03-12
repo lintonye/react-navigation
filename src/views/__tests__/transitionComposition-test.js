@@ -20,7 +20,7 @@ describe('together', () => {
     const A = initTestTransition('a', null, [a1, a2]);
     const B = initTestTransition('b', null, [b1, b2]);
     const combined = together(A(0.1), B(0.5));
-    const styleMap = combined.createStyleMap([], []);
+    const styleMap = combined.getStyleMap([], []);
     const { from: {id1: {a, b}}} = styleMap;
     assertIoRanges(a, {inputRange: [0, 0.1], outputRange: [a1, a2]});
     assertIoRanges(b, {inputRange: [0, 0.5], outputRange: [b1, b2]});
@@ -33,7 +33,7 @@ describe('sequence', () => {
     const A = initTestTransition('a', null, [a1, a2]);
     const B = initTestTransition('b', null, [b1, b2]);
     const combined = sequence(A(0.1), B(0.2));
-    const styleMap = combined.createStyleMap([], []);
+    const styleMap = combined.getStyleMap([], []);
     const { from: {id1: {a, b}}} = styleMap;
     assertIoRanges(a, {inputRange: [0, 0.1], outputRange: [a1, a2]});
     assertIoRanges(b, {inputRange: [0.1, 0.3], outputRange: [b1, b2]});
@@ -44,7 +44,7 @@ describe('sequence', () => {
     const B = initTestTransition('b', null, [b1, b2]);
     const C = initTestTransition('c', null, [c1, c2]);
     const combined = sequence(A(0.1), B(0.2), C(0.3));
-    const styleMap = combined.createStyleMap([], []);
+    const styleMap = combined.getStyleMap([], []);
     const { from: {id1: {a, b, c}}} = styleMap;
     assertIoRanges(a, {inputRange: [0, 0.1], outputRange: [a1, a2]});
     assertIoRanges(b, {inputRange: [0.1, 0.3], outputRange: [b1, b2]});
@@ -56,7 +56,7 @@ describe('sequence', () => {
     const B = initTestTransition('b', null, [b1, b2]);
     const C = initTestTransition('c', null, [c1, c2]);
     const combined = sequence(A(0.1), sequence(B(0.2), C(0.3)));
-    const styleMap = combined.createStyleMap([], []);
+    const styleMap = combined.getStyleMap([], []);
     const { from: {id1: {a, b, c}}} = styleMap;
     assertIoRanges(a, {inputRange: [0, 0.1], outputRange: [a1, a2]});
     assertIoRanges(b, {inputRange: [0.1, 0.3], outputRange: [b1, b2]});
@@ -77,7 +77,7 @@ describe('Mixing together and sequence', () => {
     const B = initTestTransition('b', null, [b1, b2]);
     const C = initTestTransition('c', null, [c1, c2]);
     const combined = sequence(A(0.1), together(B(0.2), C(0.4)));
-    const styleMap = combined.createStyleMap([], []);
+    const styleMap = combined.getStyleMap([], []);
     const { from: {id1: {a, b, c}}} = styleMap;
     assertIoRanges(a, {inputRange: [0, 0.1], outputRange: [a1, a2]});
     assertIoRanges(b, {inputRange: [0.1, 0.3], outputRange: [b1, b2]});
@@ -89,7 +89,7 @@ describe('Mixing together and sequence', () => {
     const B = initTestTransition('b', null, [b1, b2]);
     const C = initTestTransition('c', null, [c1, c2]);
     const combined = sequence(together(A(0.1), B(0.2)), C(0.4));
-    const styleMap = combined.createStyleMap([], []);
+    const styleMap = combined.getStyleMap([], []);
     const { from: {id1: {a, b, c}}} = styleMap;
     assertIoRanges(a, {inputRange: [0, 0.1], outputRange: [a1, a2]});
     assertIoRanges(b, {inputRange: [0, 0.2], outputRange: [b1, b2]});
