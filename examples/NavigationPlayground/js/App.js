@@ -75,7 +75,7 @@ const ExampleRoutes = {
 const MainScreen = ({ navigation }) => (
   <ScrollView>
     <Banner />
-    {Object.keys(ExampleRoutes).map((routeName: String) =>
+    {Object.keys(ExampleRoutes).map((routeName: string) =>
       <TouchableOpacity
         key={routeName}
         onPress={() => {
