@@ -1,7 +1,7 @@
 /* @flow */
 
 import React, { PropTypes, Component } from 'react';
-import { Animated, StyleSheet, NativeModules, PanResponder, Platform, View, I18nManager, Keyboard } from 'react-native';
+import { Animated, StyleSheet, NativeModules, PanResponder, Platform, View, I18nManager, Keyboard, UIManager } from 'react-native';
 import invariant from 'invariant';
 import _ from 'lodash';
 
